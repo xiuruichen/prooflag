@@ -38,6 +38,14 @@
 | Q9 | **RESOLVED:** repo at `C:\dev\prooflag`; DB and locker under `C:\dev\prooflag\data\` (gitignored). | Done. |
 | Q14 | **Commit attribution:** the approval message left a template line unresolved ("say 'no Claude co-author/attribution lines' if you want that, otherwise delete this line"). | **Open.** No commits are made until you say which. Default if you say nothing: the harness attribution trailer. |
 
+## 0b. Results log (F1–F5, 2026-11-13)
+
+- **F1 done:** scaffold at `C:\dev\prooflag` (uv, ruff, mypy strict, pytest, CI, JSON logging, typed settings, injectable clock); 8 tests green. Note: uv cache must live off OneDrive-linked paths (`UV_CACHE_DIR=C:\dev\.uv-cache`, `UV_LINK_MODE=copy`).
+- **F4a EDGAR (`docs/edgar-timing.md`):** `acceptanceDateTime` (UTC) matches the index-page "Accepted" stamp on 15/15 filings; the SGML header `ACCEPTANCE-DATETIME` is **ET, not UTC**; acceptance vs filing date diverge after 17:30 ET (Tesla 10-Q); www.sec.gov rejects UAs without an email-shaped contact, so live polling needs the user's `PROOFLAG_CONTACT_EMAIL`.
+- **F4b Federal Register (`docs/fedreg-timing.md`):** 40/40 EOs appear on public inspection at least 12.8 h before publication (filed 11:15 or 08:45 ET, "special" filings); signing→publication median 5 days (max 48, reissue). **The weekly EO count is not knowable from the FR until ~3–6 days after the week ends**, so PI gives ≈1 day of lead; PI is `leading`, publication is `settling`.
+- **F5 Strategy fixture (REAL, `fixtures/strategy_2026_05/`):** market found on Polymarket (resolved No, UMA proposed/disputed twice, volume ≈ $375.8M); rule text does not name SEC filings or say whether the deadline applies to the sale or its publication; 8-K `0001193125-26-249768` accepted 2026-06-01 08:00:16 ET (≈8 h after the deadline) reports 32 BTC sold May 26–31 at avg $77,135; YES price spiked 0.12 → 0.81 within 30 min of acceptance, then fell to 0.0005 by 17:30Z.
+- **F3 (in progress):** Qwen3-8B and Llama-3.1-8B pulled; schema obedience 6/6, spans verbatim, ≈5.9 tok/s (≈35 s per ~100-token call). Determinism under concurrent load was NOT bit-exact once; re-test on an idle machine is pending (plan already replays from cached LLM outputs).
+
 ## 1. Corrections to the brief (found in recon — treat as design changes)
 
 1. **EDGAR Atom feed has no acceptance time** (only an unlabeled `updated` with offset). Atom is used for **discovery only**. Acceptance time comes from `data.sec.gov/submissions/CIK##########.json` → `filings.recent.acceptanceDateTime` (UTC `Z`; e.g. an 8-K accepted 13:00:15Z = 08:00 ET). Friday task: cross-check that field against a second source (filing index "Accepted" stamp or the `.txt` header) on ≥10 filings, old and new, before any deadline logic depends on it.
