@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
@@ -47,9 +48,20 @@ class Locker:
         path = self._path(sha)
         if not path.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
-            tmp = path.with_suffix(".tmp")
-            tmp.write_bytes(data)
-            os.replace(tmp, path)
+            fd, tmp_name = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
+            try:
+                with os.fdopen(fd, "wb") as fh:
+                    fh.write(data)
+                try:
+                    os.replace(tmp_name, path)
+                except PermissionError:
+                    # Windows: a concurrent writer holds the destination. Same bytes, same sha:
+                    # if it exists now, that is success.
+                    if not path.exists():
+                        raise
+            finally:
+                if os.path.exists(tmp_name):
+                    os.unlink(tmp_name)
         self.db.conn.execute(
             "insert or ignore into artifacts(sha256, kind, byte_len, path, source_url,"
             " fetched_at_utc, accepted_at_utc, accepted_at_source, normalizer_ver)"

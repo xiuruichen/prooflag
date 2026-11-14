@@ -30,7 +30,8 @@ class JsonFormatter(logging.Formatter):
         if record.exc_info:
             out["exc"] = self.formatException(record.exc_info)
         out = self._redactor.scrub_obj(out)
-        return json.dumps(out, default=str, ensure_ascii=False)
+        # Scrub the serialized text too, as a last line of defense.
+        return self._redactor.scrub(json.dumps(out, default=str, ensure_ascii=False))
 
 
 def configure_logging(level: int = logging.INFO, redactor: Redactor | None = None) -> None:

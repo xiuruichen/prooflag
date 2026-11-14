@@ -107,6 +107,17 @@ def test_update_and_delete_are_rejected(db: Db, table: str) -> None:
         db.conn.execute(f"delete from {table}")
 
 
+@pytest.mark.parametrize("table", APPEND_ONLY)
+def test_replace_cannot_overwrite_history(db: Db, table: str) -> None:
+    sql, params = _seed(db)[table]
+    db.conn.execute(sql, params)
+    # REPLACE deletes the conflicting row; without recursive_triggers the delete trigger is skipped.
+    with pytest.raises(sqlite3.DatabaseError, match="append-only"):
+        db.conn.execute(f"insert or replace into {table} select * from {table}")
+    with pytest.raises(sqlite3.DatabaseError, match="append-only"):
+        db.conn.execute(f"replace into {table} select * from {table}")
+
+
 def test_mutable_tables_still_updatable(db: Db) -> None:
     _seed(db)
     db.conn.execute("update markets set title='new' where market_id='m1'")

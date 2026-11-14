@@ -21,13 +21,19 @@ class Redactor:
         return self._pattern.sub(REDACTED, text) if self._pattern else text
 
     def scrub_obj(self, obj: Any) -> Any:
+        """Redact secrets in strings, dict keys, bytes and containers; other objects are
+        converted with str() first so a secret in their text cannot survive."""
+        if obj is None or isinstance(obj, bool | int | float):
+            return obj
         if isinstance(obj, str):
             return self.scrub(obj)
+        if isinstance(obj, bytes | bytearray):
+            return self.scrub(bytes(obj).decode("utf-8", "replace"))
         if isinstance(obj, dict):
-            return {k: self.scrub_obj(v) for k, v in obj.items()}
-        if isinstance(obj, list | tuple):
+            return {self.scrub(str(k)): self.scrub_obj(v) for k, v in obj.items()}
+        if isinstance(obj, list | tuple | set | frozenset):
             return [self.scrub_obj(v) for v in obj]
-        return obj
+        return self.scrub(str(obj))
 
 
 def default_redactor() -> Redactor:
