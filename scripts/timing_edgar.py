@@ -5,6 +5,7 @@ header ACCEPTANCE-DATETIME. Stdlib only; <= 2 req/s. Writes data/edgar_timing.js
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 import urllib.request
@@ -12,11 +13,15 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-import os
 UA = os.environ.get("PROOFLAG_UA", "Prooflag research-bot admin@prooflag.invalid")
 ET = ZoneInfo("America/New_York")
-CIKS = {"Strategy": "0001050446", "Apple": "0000320193", "NVIDIA": "0001045810",
-        "Tesla": "0001318605", "Coinbase": "0001679788"}
+CIKS = {
+    "Strategy": "0001050446",
+    "Apple": "0000320193",
+    "NVIDIA": "0001045810",
+    "Tesla": "0001318605",
+    "Coinbase": "0001679788",
+}
 
 
 def get(url: str) -> str:
@@ -39,26 +44,38 @@ def main() -> None:
                 continue
             acc = rec["accessionNumber"][i]
             nodash = acc.replace("-", "")
-            idx = get(f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{nodash}/{acc}-index.htm")
+            idx = get(
+                f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{nodash}/{acc}-index.htm"
+            )
             m_idx = re.search(r"Accepted</div>\s*<div class=\"info\">([^<]+)<", idx)
             m_fd = re.search(r"Filing Date</div>\s*<div class=\"info\">([^<]+)<", idx)
-            hdr = get(f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{nodash}/{acc}.txt")[:3000]
+            hdr = get(f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{nodash}/{acc}.txt")[
+                :3000
+            ]
             m_hdr = re.search(r"<ACCEPTANCE-DATETIME>(\d{14})", hdr)
             api = rec["acceptanceDateTime"][i]
             api_utc = datetime.fromisoformat(api.replace("Z", "+00:00"))
             row = {
-                "who": name, "acc": acc, "form": form, "filingDate": rec["filingDate"][i],
-                "api_acceptanceDateTime": api, "api_as_ET": api_utc.astimezone(ET).isoformat(),
+                "who": name,
+                "acc": acc,
+                "form": form,
+                "filingDate": rec["filingDate"][i],
+                "api_acceptanceDateTime": api,
+                "api_as_ET": api_utc.astimezone(ET).isoformat(),
                 "index_accepted": m_idx.group(1).strip() if m_idx else None,
                 "index_filing_date": m_fd.group(1).strip() if m_fd else None,
                 "txt_acceptance_datetime": m_hdr.group(1) if m_hdr else None,
             }
             if row["index_accepted"]:
                 ia = datetime.strptime(row["index_accepted"], "%Y-%m-%d %H:%M:%S")
-                row["api_vs_index_ET_delta_s"] = (api_utc.astimezone(ET).replace(tzinfo=None) - ia).total_seconds()
+                row["api_vs_index_ET_delta_s"] = (
+                    api_utc.astimezone(ET).replace(tzinfo=None) - ia
+                ).total_seconds()
             if m_hdr:
                 th = datetime.strptime(m_hdr.group(1), "%Y%m%d%H%M%S")
-                row["txt_header_vs_api_UTC_delta_s"] = (api_utc.replace(tzinfo=None) - th).total_seconds()
+                row["txt_header_vs_api_UTC_delta_s"] = (
+                    api_utc.replace(tzinfo=None) - th
+                ).total_seconds()
             rows.append(row)
             picked += 1
             print(row, flush=True)

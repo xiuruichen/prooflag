@@ -10,7 +10,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime, timedelta
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
 B = "https://www.federalregister.gov/api/v1"
@@ -42,8 +42,13 @@ def main() -> None:
                 "order": "newest",
                 "per_page": 20,
                 "page": page,
-                "fields[]": ["document_number", "title", "publication_date", "signing_date",
-                             "executive_order_number"],
+                "fields[]": [
+                    "document_number",
+                    "title",
+                    "publication_date",
+                    "signing_date",
+                    "executive_order_number",
+                ],
             },
         )
         assert d and "results" in d, d
@@ -85,14 +90,20 @@ def main() -> None:
     out["pi_missing_docs"] = [r["doc"] for r in rows if r["pi_status"] == "missing"]
     if lead_h:
         out["lead_hours"] = {
-            "n": len(lead_h), "min": min(lead_h), "median": statistics.median(lead_h),
-            "max": max(lead_h), "n_negative": sum(h < 0 for h in lead_h),
+            "n": len(lead_h),
+            "min": min(lead_h),
+            "median": statistics.median(lead_h),
+            "max": max(lead_h),
+            "n_negative": sum(h < 0 for h in lead_h),
         }
     if sign_lag_d:
         out["signing_to_publication_days"] = {
-            "min": min(sign_lag_d), "median": statistics.median(sign_lag_d), "max": max(sign_lag_d)
+            "min": min(sign_lag_d),
+            "median": statistics.median(sign_lag_d),
+            "max": max(sign_lag_d),
         }
     from pathlib import Path
+
     Path("data").mkdir(exist_ok=True)
     Path("data/fedreg_timing.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
     print({k: v for k, v in out.items() if k != "rows"})

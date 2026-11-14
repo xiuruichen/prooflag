@@ -22,7 +22,10 @@ SCHEMA = {
             "enum": ["sec_filing", "federal_register", "court_docket", "press_release", "other"],
         },
         "deadline_text": {"type": ["string", "null"]},
-        "deadline_applies_to": {"type": "string", "enum": ["publication", "occurrence", "ambiguous"]},
+        "deadline_applies_to": {
+            "type": "string",
+            "enum": ["publication", "occurrence", "ambiguous"],
+        },
         "source_span_deadline": {"type": ["string", "null"]},
     },
     "required": [
@@ -79,7 +82,7 @@ def chat(model: str, rule: str) -> dict:
 def main() -> None:
     for model in sys.argv[1:]:
         rows = []
-        for i, rule in enumerate(RULES + [RULES[0]]):  # last = determinism repeat of #0
+        for i, rule in enumerate([*RULES, RULES[0]]):  # last = determinism repeat of #0
             d = chat(model, rule)
             text = d["message"]["content"]
             try:
@@ -93,7 +96,9 @@ def main() -> None:
             except json.JSONDecodeError:
                 obj, valid = None, False
             tps = d.get("eval_count", 0) / max(d.get("eval_duration", 1) / 1e9, 1e-9)
-            span_ok = bool(obj and (obj["source_span_deadline"] is None or obj["source_span_deadline"] in rule))
+            span_ok = bool(
+                obj and (obj["source_span_deadline"] is None or obj["source_span_deadline"] in rule)
+            )
             rows.append(
                 {
                     "i": i,
@@ -107,7 +112,17 @@ def main() -> None:
                     "prompt_tokens": d.get("prompt_eval_count"),
                 }
             )
-            print(model, i, rows[-1]["valid_schema"], rows[-1]["span_verbatim"], rows[-1]["tok_s"], "tok/s", rows[-1]["wall_s"], "s", flush=True)
+            print(
+                model,
+                i,
+                rows[-1]["valid_schema"],
+                rows[-1]["span_verbatim"],
+                rows[-1]["tok_s"],
+                "tok/s",
+                rows[-1]["wall_s"],
+                "s",
+                flush=True,
+            )
         deterministic = rows[0]["out"] == rows[-1]["out"]
         summary = {
             "model": model,
