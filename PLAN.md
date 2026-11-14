@@ -323,6 +323,14 @@ Few-shot (from gold set when labeled): (a) 8-K item 8.01 stating a purchase/sale
 
 `test_strategy_2026_05_never_evidence_gap` — inputs: `fixtures/strategy_2026_05/` (rule text, 8-K, EDGAR acceptance time, price history). Asserts, per stage: **U1** gate: `deadline_applies_to == ambiguous`, publication-basis check fails (acceptance 2026-06-01T12:00:16Z > deadline 2026-06-01T03:59:00Z), `content_yes` true; **U3**: signals emitted ⊆ {`ambiguity`, `deadline_risk(late_publication)`}, `evidence_gap` suppressed with reason `gate_disabled:ambiguous_deadline`; **U6**: replay timeline shows `ambiguity` before 2026-06-01T12:00:16Z and `deadline_risk` after it, and no `evidence_gap` at any time including the 12:30Z price spike (YES ≈ 0.81).
 
+## 10e. Edge thesis status (decided 2026-11-14)
+
+- **Thesis under test:** Prooflag can profit by being first to a public document that settles a market (evidence_gap).
+- **E1 (done, `docs/edge-study.md`):** NO SPEED EDGE on the Federal Register / weekly executive-order path. 24 independent weeks: the price was already at 0.90+ about 2.9 days before the public-inspection posting in 22 (92%); the move happens at signing (White House). Exceptions were the market's first two weeks (one reacted 38 s after the posting). Strategy (EDGAR 8-K, one case): the price rose about 5 minutes BEFORE the filing was accepted and the market resolved against the document. The Anthropic S-1, S-1/A and FWPs did not move the IPO markets.
+- **E2 (next, pre-registered in `studies/e2/preregistration.md`, appended to `docs/edge-study.md`):** live measurement of the price path around Anthropic's S-1 effectiveness notice (`EFFECT`) and final pricing prospectus (`424B*`), with exact verdict rules fixed before the events.
+- **Kill criterion:** if the markets move before, or within about 5 minutes of, those filings (like the executive orders and Strategy), the speed / evidence_gap thesis is dead. Prooflag's MVP then becomes an **ambiguity + deadline-risk + verification tool**: descope speed-related work (fast-polling priority, evidence_gap UI emphasis); keep the EDGAR and Federal Register watchers for authoritative timestamps and verification only. The Federal Register watcher stays lean either way (verification and deadline checks, not latency).
+- **Until E2 resolves:** evidence_gap stays disabled by design (precision gate, `yes_label == 'Yes'`, ambiguous-deadline suppression); S3 and S4 are built because both outcomes need them.
+
 ## 10d. Round 5 decisions (after S2)
 
 1. **Watch set = curated allow-list**, append-only (`watch_allowlist`: venue, market_id / series_ticker / event_id, reason, reviewer, added_at; revocations are new rows). Seeded from the hand-reviewed DOC_SETTLED (strict) list, the whole `KXEOWEEK` series, and the Strategy fixture market. **Regex matches only enter a candidate review queue (`watch_candidates`), never auto-watched.** Sticky `watched` from S2 is reset and recomputed from the allow-list.

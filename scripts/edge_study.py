@@ -443,6 +443,10 @@ def main() -> None:
     interp = ROOT / "studies" / "e1" / "interpretation.md"
     w("\n## Interpretation and what to build next (hand-written, post-hoc)\n")
     w(interp.read_text(encoding="utf-8") if interp.exists() else "_Not yet written._\n")
+    e2 = ROOT / "studies" / "e2" / "preregistration.md"
+    if e2.exists():
+        w("\n## E2 pre-registration (live test on the Anthropic IPO filings)\n")
+        w(e2.read_text(encoding="utf-8"))
     w("\n## Limitations\n")
     w(
         "- Weekly-EO markets only; other families have no resolved cases (see above).\n"
