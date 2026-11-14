@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     llm_endpoint: str = "http://127.0.0.1:11434"
     llm_model: str = "qwen3:8b"
     # SEC hard cap is 10 req/s; stay well under (plan target <= 2).
-    sec_max_rps: float = Field(default=2.0, gt=0, le=5.0)
+    sec_max_rps: float = Field(default=2.0, gt=0, le=2.0)  # fair-access ceiling, never higher
     fedreg_max_rps: float = Field(default=1.0, gt=0, le=5.0)
     # Venue (Kalshi / Polymarket) access: public data, unpublished unauthenticated limits.
     kalshi_base: str = "https://external-api.kalshi.com/trade-api/v2"

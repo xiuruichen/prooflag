@@ -30,7 +30,10 @@ def main() -> None:
     settings = Settings()
     db = Db(settings.db_path)
     db.migrate()
-    svc = build_sec_service(settings, db, SystemClock())
+    try:
+        svc = build_sec_service(settings, db, SystemClock())
+    except ValueError as e:
+        raise SystemExit(f"error: {e}. Copy .env.example to .env and set it.") from None
     log.info(
         "sec watcher started",
         extra={"ciks": [w.cik for w in svc.ciks.snapshot()], "forms": svc.atom_forms},
