@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software or its study results, please cite it as below."
+title: "Prooflag: comparing prediction-market resolution rules with the public documents that settle them"
+type: software
+version: 0.1.0
+date-released: 2026-11-14
+license: MIT
+repository-code: "https://github.com/xiuruichen/prooflag"
+abstract: "Research archive. Includes a pre-registered study of whether prediction-market prices lag Federal Register and SEC EDGAR documents."
+authors:
+  - name: "Prooflag contributors"

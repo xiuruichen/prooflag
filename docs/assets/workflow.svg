@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 430" width="980" height="430" role="img" aria-labelledby="t d">
+  <title id="t">Prooflag workflow</title>
+  <desc id="d">Market rules and prices and public documents flow into an append-only SQLite store and an evidence locker. A two-model rule compiler and the pre-registered studies read from them. An evaluator and signal layer is not built.</desc>
+  <style>
+    :root { --bg:#ffffff; --box:#f3f6fb; --line:#8a96a8; --ink:#1b2430; --sub:#5b6778; --acc:#2563eb; --acc2:#0d9488; --warn:#b45309; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#0d1117; --box:#161b22; --line:#6e7b8f; --ink:#e6edf3; --sub:#9aa7b8; --acc:#58a6ff; --acc2:#2dd4bf; --warn:#e3b341; }
+    }
+    .bg { fill: var(--bg); }
+    .box { fill: var(--box); stroke: var(--line); stroke-width: 1.5; }
+    .db { fill: var(--box); stroke: var(--acc); stroke-width: 2; }
+    .lock { fill: var(--box); stroke: var(--acc2); stroke-width: 2; }
+    .plan { fill: none; stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: 5 4; }
+    .h { font: 600 14px system-ui, -apple-system, "Segoe UI", sans-serif; fill: var(--ink); }
+    .s { font: 12px system-ui, -apple-system, "Segoe UI", sans-serif; fill: var(--sub); }
+    .title { font: 700 18px system-ui, -apple-system, "Segoe UI", sans-serif; fill: var(--ink); }
+    .flow { fill: none; stroke: var(--line); stroke-width: 2; stroke-dasharray: 6 6; animation: dash 1.2s linear infinite; }
+    .flowp { fill: none; stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: 3 7; opacity: .7; }
+    @keyframes dash { to { stroke-dashoffset: -12; } }
+    .pulse { animation: pulse 3s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { stroke-opacity: 1; } 50% { stroke-opacity: .35; } }
+    @media (prefers-reduced-motion: reduce) { .flow { animation: none; } .pulse { animation: none; } }
+  </style>
+  <rect class="bg" width="980" height="430" rx="10"/>
+  <text class="title" x="24" y="34">How Prooflag works</text>
+  <text class="s" x="24" y="54">Compare prediction-market resolution rules with the public documents that settle them.</text>
+
+  <!-- top lane: markets -->
+  <rect class="box" x="20" y="80" width="150" height="64" rx="8"/>
+  <text class="h" x="95" y="107" text-anchor="middle">Kalshi · Polymarket</text>
+  <text class="s" x="95" y="126" text-anchor="middle">rules, prices, trades</text>
+  <rect class="box" x="215" y="80" width="150" height="64" rx="8"/>
+  <text class="h" x="290" y="107" text-anchor="middle">Ingest</text>
+  <text class="s" x="290" y="126" text-anchor="middle">tagger, rule versions</text>
+
+  <!-- center store -->
+  <rect class="db pulse" x="410" y="80" width="150" height="190" rx="10"/>
+  <text class="h" x="485" y="150" text-anchor="middle">SQLite</text>
+  <text class="s" x="485" y="170" text-anchor="middle">append-only tables</text>
+  <text class="s" x="485" y="188" text-anchor="middle">provenance on every</text>
+  <text class="s" x="485" y="204" text-anchor="middle">derived row</text>
+
+  <!-- bottom lane: documents -->
+  <rect class="box" x="20" y="316" width="150" height="64" rx="8"/>
+  <text class="h" x="95" y="343" text-anchor="middle">SEC EDGAR</text>
+  <text class="s" x="95" y="362" text-anchor="middle">Federal Register</text>
+  <rect class="box" x="215" y="316" width="150" height="64" rx="8"/>
+  <text class="h" x="290" y="343" text-anchor="middle">Watchers</text>
+  <text class="s" x="290" y="362" text-anchor="middle">≤ 2 req/s, declared UA</text>
+  <rect class="lock" x="410" y="316" width="150" height="64" rx="8"/>
+  <text class="h" x="485" y="343" text-anchor="middle">Evidence locker</text>
+  <text class="s" x="485" y="362" text-anchor="middle">sha256, acceptance time</text>
+
+  <!-- right: compiler, studies, planned -->
+  <rect class="box" x="640" y="80" width="150" height="64" rx="8"/>
+  <text class="h" x="715" y="104" text-anchor="middle">Rule compiler</text>
+  <text class="s" x="715" y="121" text-anchor="middle">2 local models vote</text>
+  <text class="s" x="715" y="136" text-anchor="middle">verbatim span check</text>
+  <rect class="box" x="810" y="80" width="150" height="64" rx="8"/>
+  <text class="h" x="885" y="107" text-anchor="middle">RuleSpec</text>
+  <text class="s" x="885" y="126" text-anchor="middle">ambiguous if unsure</text>
+
+  <rect class="box" x="640" y="206" width="150" height="64" rx="8"/>
+  <text class="h" x="715" y="233" text-anchor="middle">Studies E1 · E2</text>
+  <text class="s" x="715" y="252" text-anchor="middle">pre-registered rules</text>
+  <rect class="box" x="810" y="206" width="150" height="64" rx="8"/>
+  <text class="h" x="885" y="233" text-anchor="middle">Verdict</text>
+  <text class="s" x="885" y="252" text-anchor="middle">computed by code</text>
+
+  <rect class="plan" x="640" y="316" width="150" height="64" rx="8"/>
+  <text class="h" x="715" y="343" text-anchor="middle">Evaluator · signals</text>
+  <text class="s" x="715" y="362" text-anchor="middle">not built</text>
+  <rect class="plan" x="810" y="316" width="150" height="64" rx="8"/>
+  <text class="h" x="885" y="343" text-anchor="middle">Case file</text>
+  <text class="s" x="885" y="362" text-anchor="middle">not built</text>
+
+  <!-- flows -->
+  <path class="flow" d="M170,112 H215"/>
+  <path class="flow" d="M365,112 H410"/>
+  <path class="flow" d="M170,348 H215"/>
+  <path class="flow" d="M365,348 H410"/>
+  <path class="flow" d="M485,316 V270"/>
+  <path class="flow" d="M560,112 H640"/>
+  <path class="flow" d="M790,112 H810"/>
+  <path class="flow" d="M560,238 H640"/>
+  <path class="flow" d="M790,238 H810"/>
+  <path class="flowp" d="M560,348 H640"/>
+  <path class="flowp" d="M790,348 H810"/>
+
+  <!-- moving packets -->
+  <circle r="4" fill="var(--acc)"><animateMotion dur="2.4s" repeatCount="indefinite" path="M170,112 H215 M215,112 H365 M365,112 H410"/></circle>
+  <circle r="4" fill="var(--acc2)"><animateMotion dur="2.4s" begin="0.4s" repeatCount="indefinite" path="M170,348 H410"/></circle>
+  <circle r="4" fill="var(--acc2)"><animateMotion dur="1.2s" begin="1s" repeatCount="indefinite" path="M485,316 V270"/></circle>
+  <circle r="4" fill="var(--acc)"><animateMotion dur="1.6s" begin="0.2s" repeatCount="indefinite" path="M560,112 H640"/></circle>
+  <circle r="4" fill="var(--acc)"><animateMotion dur="1.2s" begin="0.8s" repeatCount="indefinite" path="M790,112 H810"/></circle>
+  <circle r="4" fill="var(--acc)"><animateMotion dur="1.6s" begin="0.6s" repeatCount="indefinite" path="M560,238 H640"/></circle>
+  <circle r="4" fill="var(--acc2)"><animateMotion dur="1.2s" begin="1.2s" repeatCount="indefinite" path="M790,238 H810"/></circle>
+
+  <!-- legend -->
+  <circle cx="30" cy="408" r="4" fill="var(--acc)"/><text class="s" x="42" y="412">market data and rules</text>
+  <circle cx="190" cy="408" r="4" fill="var(--acc2)"/><text class="s" x="202" y="412">public documents</text>
+  <rect class="plan" x="330" y="400" width="26" height="16" rx="3"/><text class="s" x="364" y="412">planned, not built</text>
+</svg>
