@@ -9,7 +9,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from prooflag.ingest.http import VenueClient
-from prooflag.ingest.models import PricePoint, RawMarket, Status
+from prooflag.ingest.models import PricePoint, RawMarket, Status, Trade
 
 log = logging.getLogger(__name__)
 MAX_CANDLES = 5000
@@ -145,6 +145,67 @@ class KalshiSource:
             open_interest_contracts=_f(m.get("open_interest_fp")),
             raw=m,
         )
+
+    # -- historical data (older than the exchange cutoff) -----------------------------------
+    def iter_historical_markets(self, series_ticker: str) -> Iterator[dict[str, Any]]:
+        """Raw market dicts of a series settled before the live-data cutoff (not nested in
+        /events). Includes markets whose tickers have no threshold suffix."""
+        cursor = ""
+        while True:
+            params: dict[str, Any] = {"series_ticker": series_ticker, "limit": 1000}
+            if cursor:
+                params["cursor"] = cursor
+            data = self._c.get_json(f"{self._base}/historical/markets", params)
+            yield from data.get("markets") or []
+            cursor = data.get("cursor") or ""
+            if not cursor:
+                return
+
+    def iter_trades(
+        self,
+        ticker: str,
+        *,
+        historical: bool = False,
+        min_ts: datetime | None = None,
+        max_ts: datetime | None = None,
+    ) -> Iterator[Trade]:
+        """Executed trades (newest first, as the API returns them). Malformed rows are skipped
+        and counted in ``parse_errors``."""
+        self.parse_errors = 0
+        path = "/historical/trades" if historical else "/markets/trades"
+        cursor = ""
+        while True:
+            params: dict[str, Any] = {"ticker": ticker, "limit": 1000}
+            if min_ts is not None:
+                params["min_ts"] = int(min_ts.timestamp())
+            if max_ts is not None:
+                params["max_ts"] = int(max_ts.timestamp())
+            if cursor:
+                params["cursor"] = cursor
+            data = self._c.get_json(f"{self._base}{path}", params)
+            for t in data.get("trades") or []:
+                try:
+                    price, count = float(t["yes_price_dollars"]), float(t["count_fp"])
+                    ts = _ts(t["created_time"])
+                    if ts is None or not math.isfinite(price) or not math.isfinite(count):
+                        raise ValueError("bad trade")
+                    yield Trade(ts, price, count, str(t.get("taker_side", "")), str(t["trade_id"]))
+                except (KeyError, ValueError, TypeError):
+                    self.parse_errors += 1
+            cursor = data.get("cursor") or ""
+            if not cursor:
+                return
+
+    def all_trades(self, ticker: str) -> list[Trade]:
+        """Live plus historical trades, de-duplicated by trade id, oldest first."""
+        seen: dict[str, Trade] = {}
+        errors = 0
+        for hist in (False, True):
+            for t in self.iter_trades(ticker, historical=hist):
+                seen.setdefault(t.trade_id, t)
+            errors += self.parse_errors
+        self.parse_errors = errors
+        return sorted(seen.values(), key=lambda t: (t.ts, t.trade_id))
 
     # -- targeted lookups (snapshots / settlement tracking) ----------------------------------
     def fetch_markets(self, tickers: list[str]) -> list[RawMarket]:

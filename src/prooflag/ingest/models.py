@@ -50,3 +50,14 @@ class PricePoint:
     yes_ask: float | None = None
     volume: float | None = None
     open_interest: float | None = None
+
+
+@dataclass(frozen=True)
+class Trade:
+    """One executed trade. ``price`` is the YES price in dollars, ``count`` is contracts."""
+
+    ts: datetime
+    price: float
+    count: float
+    taker_side: str
+    trade_id: str

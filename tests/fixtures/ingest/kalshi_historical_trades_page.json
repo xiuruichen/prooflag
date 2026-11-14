@@ -1,0 +1,68 @@
+{
+ "status": 200,
+ "body": {
+  "cursor": "EhIKEAciqeNiQZztOJUwVSZ1RsEaDAiJ-4rVBhDQuZbuAQ",
+  "trades": [
+   {
+    "count_fp": "15.14",
+    "created_time": "2026-09-11T00:18:29.199034Z",
+    "is_block_trade": false,
+    "no_price_dollars": "0.0100",
+    "taker_book_side": "ask",
+    "taker_outcome_side": "no",
+    "taker_side": "no",
+    "ticker": "KXEOWEEK-26SEP12-1",
+    "trade_id": "0722bfef-3b71-adad-0787-b5f06afb1fd3",
+    "yes_price_dollars": "0.9900"
+   },
+   {
+    "count_fp": "0.11",
+    "created_time": "2026-09-11T00:16:56.315814Z",
+    "is_block_trade": false,
+    "no_price_dollars": "0.0100",
+    "taker_book_side": "ask",
+    "taker_outcome_side": "no",
+    "taker_side": "no",
+    "ticker": "KXEOWEEK-26SEP12-1",
+    "trade_id": "0722bff1-6851-8041-f9ca-e203f2e2f39f",
+    "yes_price_dollars": "0.9900"
+   },
+   {
+    "count_fp": "0.11",
+    "created_time": "2026-09-11T00:00:07.431691Z",
+    "is_block_trade": false,
+    "no_price_dollars": "0.0100",
+    "taker_book_side": "ask",
+    "taker_outcome_side": "no",
+    "taker_side": "no",
+    "ticker": "KXEOWEEK-26SEP12-1",
+    "trade_id": "0722bfb3-8631-b4c9-83e5-ae3dd090e727",
+    "yes_price_dollars": "0.9900"
+   },
+   {
+    "count_fp": "15.14",
+    "created_time": "2026-09-10T21:52:08.573246Z",
+    "is_block_trade": false,
+    "no_price_dollars": "0.0100",
+    "taker_book_side": "ask",
+    "taker_outcome_side": "no",
+    "taker_side": "no",
+    "ticker": "KXEOWEEK-26SEP12-1",
+    "trade_id": "0722bede-8e61-aaec-5590-e2ebb6307a35",
+    "yes_price_dollars": "0.9900"
+   },
+   {
+    "count_fp": "265.89",
+    "created_time": "2026-09-10T14:24:09.49949Z",
+    "is_block_trade": false,
+    "no_price_dollars": "0.0100",
+    "taker_book_side": "bid",
+    "taker_outcome_side": "yes",
+    "taker_side": "yes",
+    "ticker": "KXEOWEEK-26SEP12-1",
+    "trade_id": "0722a9e3-6241-9ced-3895-3055267546c1",
+    "yes_price_dollars": "0.9900"
+   }
+  ]
+ }
+}

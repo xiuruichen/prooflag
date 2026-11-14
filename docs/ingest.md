@@ -62,6 +62,14 @@ Live validation: `scripts/run_ingest_once.py`.
     so an outage neither hammers the dead venue nor repeats the healthy one. `run_due()` never raises. A failed
     history backfill for a market is not retried for an hour.
 
+14. **Correction (found in E1): series history coverage.** Earlier text said the S2 series ingest reaches "30
+    settled weeks" of `KXEOWEEK`. That was 30 *markets* in only 8 weeks: `/events` nests markets only for
+    recently settled events. Older markets live behind `/historical/markets?series_ticker=` (93 more, settled
+    before the exchange cutoff, 2026-09-13), with `/historical/trades` for their trades. `KalshiSource` now has
+    `iter_historical_markets`, `iter_trades` and `all_trades` (live + historical, de-duplicated by trade id); the
+    E1 study uses them. `IngestService.ingest_series` still reads only nested events: **backlog** (make it
+    include historical markets so the local DB holds the full weekly-EO history).
+
 ## Known limits
 
 - Tagging is regex-over-rule-text (recall oriented). Kalshi "court" matches are noisy (elections, certified
