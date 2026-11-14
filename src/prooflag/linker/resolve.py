@@ -60,6 +60,14 @@ class EntityLinker:
         )
         by_name = self._index.by_name(name_key) if name_key else []
         merged: dict[str, Company] = {c.cik: c for c in [*by_ticker, *by_name]}
+        stripped = query.strip()
+        if by_ticker and not by_name:
+            # A ticker hit is trusted only when the query is WRITTEN as a ticker (upper case) and is
+            # not a single letter: "Ford" is a name that happens to be someone else's ticker.
+            if len(normalize_ticker(query)) == 1:
+                return LinkResult(query, "ambiguous", None, "short_ticker", by_ticker)
+            if stripped != stripped.upper():
+                return LinkResult(query, "ambiguous", None, "ticker_case_mismatch", by_ticker)
         if len(merged) == 1:
             method = "ticker" if by_ticker else "name"
             (only,) = merged.values()

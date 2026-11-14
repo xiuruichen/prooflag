@@ -20,6 +20,7 @@ APPEND_ONLY = [
     "market_rule_changes",
     "watch_allowlist",
     "entity_aliases",
+    "watch_ciks",
 ]
 
 
@@ -104,6 +105,11 @@ def _seed(db: Db) -> dict[str, tuple[str, tuple[object, ...]]]:
         "entity_aliases": (
             "insert into entity_aliases(action, alias_norm, alias_raw, cik, name, reason, reviewer,"
             " added_at) values ('allow','x','X','0000000001','X','r','t',?)",
+            (NOW,),
+        ),
+        "watch_ciks": (
+            "insert into watch_ciks(action, cik, name, reason, reviewer, added_at)"
+            " values ('allow','0000000001','X','r','t',?)",
             (NOW,),
         ),
         "label_consensus": (

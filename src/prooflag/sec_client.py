@@ -20,6 +20,7 @@ import httpx
 from prooflag.ratelimit import RateLimiter
 
 log = logging.getLogger(__name__)
+MAX_RETRY_AFTER = 60.0  # one header must not block the scheduler for hours
 
 
 class SecHTTPError(Exception):
@@ -107,7 +108,11 @@ class SecClient:
                     last_status = code
                     self.stats.errors += 1
                     retry_after = resp.headers.get("Retry-After")
-                    wait = float(retry_after) if retry_after and retry_after.isdigit() else None
+                    wait = (
+                        min(float(retry_after), MAX_RETRY_AFTER)
+                        if retry_after and retry_after.isdigit()
+                        else None
+                    )
                     if attempt < self._max_retries:
                         self.stats.retries += 1
                         self._sleep(wait if wait is not None else 0.5 * (2**attempt))

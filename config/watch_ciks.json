@@ -1,0 +1,17 @@
+{
+ "version": 1,
+ "ciks": [
+  {
+   "cik": "0002130357",
+   "name": "Anthropic, PBC",
+   "reason": "E2 subject: the IPO markets settle on its EDGAR filings (S-1 effectiveness notice, 424B pricing prospectus)",
+   "reviewer": "user decision 2026-11-14"
+  },
+  {
+   "cik": "0001050446",
+   "name": "Strategy Inc",
+   "reason": "Strategy fixture issuer; 8-K filings settle bitcoin-sale markets",
+   "reviewer": "user decision 2026-11-14"
+  }
+ ]
+}

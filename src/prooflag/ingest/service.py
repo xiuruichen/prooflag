@@ -23,6 +23,7 @@ from prooflag.ingest.tagging import (
     is_review_candidate,
     tag_market,
 )
+from prooflag.scheduling import backoff_due
 from prooflag.store.db import Db
 
 log = logging.getLogger(__name__)
@@ -128,23 +129,7 @@ class IngestService:
         )
 
     def _backoff_due(self, source: str, base: timedelta, now: datetime) -> bool:
-        """Is the next attempt for ``source`` due? Success: after ``base`` since the last attempt.
-        Consecutive failures back off exponentially (2, 4, 8 ... minutes, capped at ``base``) so a
-        dead venue is not hammered and a healthy one keeps its own schedule."""
-        rows = self.db.conn.execute(
-            "select ts, ok from poll_log where source=? order by id desc limit 12", (source,)
-        ).fetchall()
-        if not rows:
-            return True
-        fails = 0
-        for r in rows:
-            if r["ok"]:
-                break
-            fails += 1
-        last = _dt(rows[0]["ts"])
-        assert last is not None
-        interval = base if fails == 0 else min(base, timedelta(minutes=2**fails))
-        return now - last >= interval
+        return backoff_due(self.db, source, base, now)
 
     def _recent_backfill_failure(self, venue: str, market_id: str, now: datetime) -> bool:
         row = self.db.conn.execute(

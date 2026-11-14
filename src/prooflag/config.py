@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     entity_aliases_seed_path: Path = (
         Path(__file__).resolve().parents[2] / "config" / "entity_aliases.json"
     )
+    # SEC watcher: poll cadence (fast inside the EDGAR window, slow otherwise) and the watch list.
+    sec_fast_seconds: int = Field(default=30, ge=5)
+    sec_slow_minutes: int = Field(default=15, ge=1)
+    sec_atom_forms: str = "EFFECT,424B4,424B3,424B1,8-A12B"
+    watch_ciks_seed_path: Path = Path(__file__).resolve().parents[2] / "config" / "watch_ciks.json"
     # EDGAR window (America/New_York, weekdays) drives the price-snapshot cadence.
     edgar_window_start: str = "06:00"
     edgar_window_end: str = "22:00"
@@ -48,6 +53,10 @@ class Settings(BaseSettings):
         if self.snapshot_fast_minutes > self.snapshot_slow_minutes:
             raise ValueError("snapshot_fast_minutes must be <= snapshot_slow_minutes")
         return self
+
+    @property
+    def atom_forms(self) -> list[str]:
+        return [f.strip() for f in self.sec_atom_forms.split(",") if f.strip()]
 
     @property
     def user_agent(self) -> str:

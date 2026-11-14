@@ -49,7 +49,7 @@ def test_normalize_ticker_unifies_class_separators_and_case() -> None:
 
 
 def test_ticker_resolves_to_a_ten_digit_cik_with_method() -> None:
-    for q in ("NVDA", "nvda", " NVDA "):
+    for q in ("NVDA", " NVDA "):
         r = LINKER.resolve(q)
         assert (r.status, r.cik, r.method) == ("resolved", "0001045810", "ticker")
 

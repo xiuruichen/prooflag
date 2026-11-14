@@ -58,17 +58,18 @@ class AliasRepo:
         self.db = db
         self.clock = clock
 
-    def _latest(self, norm: str) -> str | None:
+    def _latest(self, norm: str) -> tuple[str, str] | None:
         row = self.db.conn.execute(
-            "select action from entity_aliases where alias_norm=? order by alias_id desc limit 1",
+            "select action, cik from entity_aliases where alias_norm=?"
+            " order by alias_id desc limit 1",
             (norm,),
         ).fetchone()
-        return None if row is None else str(row[0])
+        return None if row is None else (str(row[0]), str(row[1]))
 
     def _append(self, action: str, a: Alias, source: str | None) -> bool:
         norm = normalize_name(a.alias)
-        if self._latest(norm) == action:
-            return False
+        if self._latest(norm) == (action, a.cik):
+            return False  # same state and same target: no-op (a changed CIK is a new row)
         self.db.conn.execute(
             "insert into entity_aliases(action, alias_norm, alias_raw, cik, name, reason, reviewer,"
             " added_at, source) values (?,?,?,?,?,?,?,?,?)",

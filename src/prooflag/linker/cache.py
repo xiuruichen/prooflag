@@ -48,10 +48,17 @@ class SecTickerCache:
     def _read(self) -> tuple[dict[str, Any], dict[str, Any]] | None:
         try:
             data = json.loads(self.path.read_text(encoding="utf-8"))
-            meta = json.loads(self.meta_path.read_text(encoding="utf-8"))
         except (OSError, ValueError):
             return None
-        return (data, meta) if _valid(data) else None
+        if not _valid(data):
+            return None
+        try:
+            meta = json.loads(self.meta_path.read_text(encoding="utf-8"))
+            if not isinstance(meta, dict):
+                meta = {}
+        except (OSError, ValueError):
+            meta = {}  # unreadable meta: keep the data, treat it as stale (refresh, or fall back)
+        return data, meta
 
     def _write(self, body: bytes, last_modified: str | None) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -62,20 +69,24 @@ class SecTickerCache:
         self._write_meta(last_modified)
 
     def _write_meta(self, last_modified: str | None) -> None:
-        self.meta_path.write_text(
-            json.dumps(
-                {"last_modified": last_modified, "fetched_at": self.clock.now().isoformat()}
-            ),
-            encoding="utf-8",
+        payload = json.dumps(
+            {"last_modified": last_modified, "fetched_at": self.clock.now().isoformat()}
         )
+        fd, tmp = tempfile.mkstemp(dir=self.path.parent, suffix=".tmp")
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(payload)
+        os.replace(tmp, self.meta_path)
 
     # -- API ---------------------------------------------------------------------------------
     def rows(self) -> tuple[list[dict[str, Any]], CacheInfo]:
         cached = self._read()
         if cached is not None:
             data, meta = cached
-            fetched = datetime.fromisoformat(meta["fetched_at"])
-            if self.clock.now() - fetched < self.max_age:
+            try:
+                fetched = datetime.fromisoformat(meta["fetched_at"])
+            except (KeyError, ValueError, TypeError):
+                fetched = None  # no usable timestamp: stale
+            if fetched is not None and self.clock.now() - fetched < self.max_age:
                 return list(data.values()), CacheInfo("cache", meta.get("last_modified"))
         headers = {}
         if cached is not None and cached[1].get("last_modified"):

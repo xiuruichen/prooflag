@@ -31,6 +31,7 @@ EXPECTED_TABLES = {
     "watch_allowlist",
     "watch_candidates",
     "entity_aliases",
+    "watch_ciks",
 }
 
 

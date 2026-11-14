@@ -25,8 +25,8 @@ class Cadence:
         self,
         window_start: str = "06:00",
         window_end: str = "22:00",
-        fast_minutes: int = 5,
-        slow_minutes: int = 30,
+        fast_minutes: float = 5,
+        slow_minutes: float = 30,
     ) -> None:
         self.start = _parse(window_start)
         self.end = _parse(window_end)
