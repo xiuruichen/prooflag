@@ -26,6 +26,8 @@ EXPECTED_TABLES = {
     "poll_log",
     "labels_raw",
     "label_consensus",
+    "market_rule_changes",
+    "market_tokens",
 }
 
 

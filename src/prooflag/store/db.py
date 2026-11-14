@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import sqlite3
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from importlib import resources
 from pathlib import Path
 
@@ -38,6 +40,18 @@ class Db:
                 if "locked" not in str(e) or time.monotonic() > deadline:
                     raise
                 time.sleep(0.02)
+
+    @contextmanager
+    def transaction(self) -> Iterator[sqlite3.Connection]:
+        """One atomic write batch (begin immediate / commit; rollback on error). Not reentrant."""
+        self.conn.execute("begin immediate")
+        try:
+            yield self.conn
+        except BaseException:
+            self.conn.execute("rollback")
+            raise
+        else:
+            self.conn.execute("commit")
 
     def close(self) -> None:
         self.conn.close()

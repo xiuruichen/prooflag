@@ -1,0 +1,6 @@
+{
+ "status": 400,
+ "body": {
+  "error": "invalid filters: 'startTs' and 'endTs' interval is too long"
+ }
+}

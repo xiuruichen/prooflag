@@ -17,6 +17,7 @@ APPEND_ONLY = [
     "provenance",
     "labels_raw",
     "label_consensus",
+    "market_rule_changes",
 ]
 
 
@@ -86,6 +87,11 @@ def _seed(db: Db) -> dict[str, tuple[str, tuple[object, ...]]]:
             "insert into labels_raw(item_kind, item_id, labeler, model, value_json, spans_json,"
             " reason, spans_valid, provenance_id, created_at)"
             " values ('rule','i1','A','opus','{}','[]','r',1,1,?)",
+            (NOW,),
+        ),
+        "market_rule_changes": (
+            "insert into market_rule_changes(venue, market_id, from_sha, to_sha, seen_at)"
+            " values ('kalshi','m1','a','b',?)",
             (NOW,),
         ),
         "label_consensus": (

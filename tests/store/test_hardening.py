@@ -62,7 +62,7 @@ def test_concurrent_migrate_on_same_file_is_safe(tmp_path: Path) -> None:
     assert not errors, errors[:2]
     d = Db(db_path)
     versions = [r[0] for r in d.conn.execute("select version from schema_version")]
-    assert versions == [1]
+    assert versions == [1, 2]
     d.close()
 
 

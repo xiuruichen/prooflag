@@ -1,0 +1,227 @@
+{
+ "status": 200,
+ "body": {
+  "cursor": "CgsIiqXf1wYQ6MqtLxIyS1hNVkVDUk9TU0NBVEVHT1JZLVMyMDI2R0VKVk5QSzNWT0xMRDdINy02U1ZVTVc2SzU",
+  "markets": [
+   {
+    "can_close_early": true,
+    "close_time": "2026-11-16T03:30:00Z",
+    "created_time": "2026-11-14T03:16:26.099385Z",
+    "custom_strike": {
+     "Associated Events": "KXNBAAST-26NOV13OKCLAC,KXNBAAST-26NOV13OKCLAC,KXNBAGAME-26NOV13ATLCHI,KXNBAGAME-26NOV13CLEMIA,KXNBAGAME-26NOV13GSWSAS,KXNBAGAME-26NOV13OKCLAC,KXNBAPTS-26NOV13OKCLAC,KXNBAPTS-26NOV13OKCLAC,KXNBAPTS-26NOV13OKCLAC,KXNBAPTS-26NOV13OKCLAC,KXNBAPTS-26NOV13OKCLAC,KXNBAPTS-26NOV13OKCLAC,KXNBAPTS-26NOV13OKCLAC",
+     "Associated Market Sides": "yes,no,yes,yes,yes,yes,no,yes,no,no,no,no,no",
+     "Associated Markets": "KXNBAAST-26NOV13OKCLAC-LACDGARLAND10-4,KXNBAAST-26NOV13OKCLAC-OKCSGILGEOUSALEXANDER2-8,KXNBAGAME-26NOV13ATLCHI-CHI,KXNBAGAME-26NOV13CLEMIA-MIA,KXNBAGAME-26NOV13GSWSAS-SAS,KXNBAGAME-26NOV13OKCLAC-OKC,KXNBAPTS-26NOV13OKCLAC-LACBLOPEZ11-20,KXNBAPTS-26NOV13OKCLAC-LACDGARLAND10-10,KXNBAPTS-26NOV13OKCLAC-LACDJONES5-20,KXNBAPTS-26NOV13OKCLAC-LACKWAGLER1-20,KXNBAPTS-26NOV13OKCLAC-LACRHACHIMURA28-25,KXNBAPTS-26NOV13OKCLAC-OKCJMCCAIN3-25,KXNBAPTS-26NOV13OKCLAC-OKCSGILGEOUSALEXANDER2-40",
+     "Multivariate Event Ticker": "KXMVECROSSCATEGORY-S2026PWCQA5RRUG6QK3ZH"
+    },
+    "event_ticker": "KXMVECROSSCATEGORY-S2026PWCQA5RRUG6QK3ZH",
+    "exchange_index": 1,
+    "expected_expiration_time": "2026-11-14T09:30:00Z",
+    "expiration_time": "2026-11-16T03:30:00Z",
+    "expiration_value": "",
+    "is_provisional": true,
+    "last_price_dollars": "0.0000",
+    "latest_expiration_time": "2026-11-16T03:30:00Z",
+    "market_type": "binary",
+    "mve_collection_ticker": "KXMVECROSSCATEGORY-R",
+    "mve_selected_legs": [
+     {
+      "event_ticker": "KXNBAAST-26NOV13OKCLAC",
+      "market_ticker": "KXNBAAST-26NOV13OKCLAC-LACDGARLAND10-4",
+      "side": "yes"
+     },
+     {
+      "event_ticker": "KXNBAAST-26NOV13OKCLAC",
+      "market_ticker": "KXNBAAST-26NOV13OKCLAC-OKCSGILGEOUSALEXANDER2-8",
+      "side": "no"
+     },
+     {
+      "event_ticker": "KXNBAGAME-26NOV13ATLCHI",
+      "market_ticker": "KXNBAGAME-26NOV13ATLCHI-CHI",
+      "side": "yes"
+     },
+     {
+      "event_ticker": "KXNBAGAME-26NOV13CLEMIA",
+      "market_ticker": "KXNBAGAME-26NOV13CLEMIA-MIA",
+      "side": "yes"
+     },
+     {
+      "event_ticker": "KXNBAGAME-26NOV13GSWSAS",
+      "market_ticker": "KXNBAGAME-26NOV13GSWSAS-SAS",
+      "side": "yes"
+     },
+     {
+      "event_ticker": "KXNBAGAME-26NOV13OKCLAC",
+      "market_ticker": "KXNBAGAME-26NOV13OKCLAC-OKC",
+      "side": "yes"
+     },
+     {
+      "event_ticker": "KXNBAPTS-26NOV13OKCLAC",
+      "market_ticker": "KXNBAPTS-26NOV13OKCLAC-LACBLOPEZ11-20",
+      "side": "no"
+     },
+     {
+      "event_ticker": "KXNBAPTS-26NOV13OKCLAC",
+      "market_ticker": "KXNBAPTS-26NOV13OKCLAC-LACDGARLAND10-10",
+      "side": "yes"
+     },
+     {
+      "event_ticker": "KXNBAPTS-26NOV13OKCLAC",
+      "market_ticker": "KXNBAPTS-26NOV13OKCLAC-LACDJONES5-20",
+      "side": "no"
+     },
+     {
+      "event_ticker": "KXNBAPTS-26NOV13OKCLAC",
+      "market_ticker": "KXNBAPTS-26NOV13OKCLAC-LACKWAGLER1-20",
+      "side": "no"
+     },
+     {
+      "event_ticker": "KXNBAPTS-26NOV13OKCLAC",
+      "market_ticker": "KXNBAPTS-26NOV13OKCLAC-LACRHACHIMURA28-25",
+      "side": "no"
+     },
+     {
+      "event_ticker": "KXNBAPTS-26NOV13OKCLAC",
+      "market_ticker": "KXNBAPTS-26NOV13OKCLAC-OKCJMCCAIN3-25",
+      "side": "no"
+     },
+     {
+      "event_ticker": "KXNBAPTS-26NOV13OKCLAC",
+      "market_ticker": "KXNBAPTS-26NOV13OKCLAC-OKCSGILGEOUSALEXANDER2-40",
+      "side": "no"
+     }
+    ],
+    "no_ask_dollars": "1.0000",
+    "no_bid_dollars": "1.0000",
+    "no_sub_title": "yes Darius Garland: 4+,no Shai Gilgeous-Alexander: 8+,yes Chicago,yes Miami,yes San Antonio,yes Oklahoma City,no Brook Lopez: 20+,yes Darius Garland: 10+,no Derrick Jones Jr.: 20+,no Keaton Wagler: 20+,no Rui Hachimura: 25+,no Jared McCain: 25+,no Shai Gilgeous-Alexander: 40+",
+    "notional_value_dollars": "1.0000",
+    "open_interest_fp": "0.00",
+    "open_time": "2026-11-14T03:16:26Z",
+    "previous_price_dollars": "0.0000",
+    "previous_yes_ask_dollars": "0.0000",
+    "previous_yes_bid_dollars": "0.0000",
+    "price_level_structure": "center_deci_edge_centi_cent",
+    "price_ranges": [
+     {
+      "end": "0.0100",
+      "start": "0.0000",
+      "step": "0.0001"
+     },
+     {
+      "end": "0.9900",
+      "start": "0.0100",
+      "step": "0.0010"
+     },
+     {
+      "end": "1.0000",
+      "start": "0.9900",
+      "step": "0.0001"
+     }
+    ],
+    "result": "",
+    "rules_primary": "",
+    "rules_secondary": "Kalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Governing League. All trademarks, logos, and brand names are the property of their respective owners.",
+    "settlement_bounds_type": "default",
+    "settlement_timer_seconds": 5,
+    "status": "active",
+    "strike_type": "custom",
+    "ticker": "KXMVECROSSCATEGORY-S2026PWCQA5RRUG6QK3ZH-B2YRBI3FO",
+    "title": "yes Darius Garland: 4+,no Shai Gilgeous-Alexander: 8+,yes Chicago,yes Miami,yes San Antonio,yes Oklahoma City,no Brook Lopez: 20+,yes Darius Garland: 10+,no Derrick Jones Jr.: 20+,no Keaton Wagler: 20+,no Rui Hachimura: 25+,no Jared McCain: 25+,no Shai Gilgeous-Alexander: 40+",
+    "updated_time": "2026-11-14T03:16:26.696386Z",
+    "volume_24h_fp": "0.00",
+    "volume_fp": "0.00",
+    "yes_ask_dollars": "0.0000",
+    "yes_ask_size_fp": "0.00",
+    "yes_bid_dollars": "0.0000",
+    "yes_bid_size_fp": "0.00",
+    "yes_sub_title": "yes Darius Garland: 4+,no Shai Gilgeous-Alexander: 8+,yes Chicago,yes Miami,yes San Antonio,yes Oklahoma City,no Brook Lopez: 20+,yes Darius Garland: 10+,no Derrick Jones Jr.: 20+,no Keaton Wagler: 20+,no Rui Hachimura: 25+,no Jared McCain: 25+,no Shai Gilgeous-Alexander: 40+"
+   },
+   {
+    "can_close_early": true,
+    "close_time": "2026-11-16T02:30:00Z",
+    "created_time": "2026-11-14T03:16:26.099313Z",
+    "custom_strike": {
+     "Associated Events": "KXNBAPTS-26NOV13GSWSAS,KXNBAREB-26NOV13GSWSAS,KXNBASPREAD-26NOV13ATLCHI,KXNBASTL-26NOV13GSWSAS",
+     "Associated Market Sides": "yes,no,yes,no",
+     "Associated Markets": "KXNBAPTS-26NOV13GSWSAS-SASSCASTLE5-20,KXNBAREB-26NOV13GSWSAS-SASDFOX4-8,KXNBASPREAD-26NOV13ATLCHI-CHI2,KXNBASTL-26NOV13GSWSAS-SASDFOX4-3",
+     "Multivariate Event Ticker": "KXMVECROSSCATEGORY-S2026GEJVNPK3VOLLD7H7"
+    },
+    "event_ticker": "KXMVECROSSCATEGORY-S2026GEJVNPK3VOLLD7H7",
+    "exchange_index": 1,
+    "expected_expiration_time": "2026-11-14T08:30:00Z",
+    "expiration_time": "2026-11-16T02:30:00Z",
+    "expiration_value": "",
+    "is_provisional": true,
+    "last_price_dollars": "0.0000",
+    "latest_expiration_time": "2026-11-16T02:30:00Z",
+    "market_type": "binary",
+    "mve_collection_ticker": "KXMVECROSSCATEGORY-R",
+    "mve_selected_legs": [
+     {
+      "event_ticker": "KXNBAPTS-26NOV13GSWSAS",
+      "market_ticker": "KXNBAPTS-26NOV13GSWSAS-SASSCASTLE5-20",
+      "side": "yes"
+     },
+     {
+      "event_ticker": "KXNBAREB-26NOV13GSWSAS",
+      "market_ticker": "KXNBAREB-26NOV13GSWSAS-SASDFOX4-8",
+      "side": "no"
+     },
+     {
+      "event_ticker": "KXNBASPREAD-26NOV13ATLCHI",
+      "market_ticker": "KXNBASPREAD-26NOV13ATLCHI-CHI2",
+      "side": "yes"
+     },
+     {
+      "event_ticker": "KXNBASTL-26NOV13GSWSAS",
+      "market_ticker": "KXNBASTL-26NOV13GSWSAS-SASDFOX4-3",
+      "side": "no"
+     }
+    ],
+    "no_ask_dollars": "1.0000",
+    "no_bid_dollars": "1.0000",
+    "no_sub_title": "yes Stephon Castle: 20+,no De'Aaron Fox: 8+,yes Chicago wins by over 1.5 points,no De'Aaron Fox: 3+",
+    "notional_value_dollars": "1.0000",
+    "open_interest_fp": "0.00",
+    "open_time": "2026-11-14T03:16:26Z",
+    "previous_price_dollars": "0.0000",
+    "previous_yes_ask_dollars": "0.0000",
+    "previous_yes_bid_dollars": "0.0000",
+    "price_level_structure": "center_deci_edge_centi_cent",
+    "price_ranges": [
+     {
+      "end": "0.0100",
+      "start": "0.0000",
+      "step": "0.0001"
+     },
+     {
+      "end": "0.9900",
+      "start": "0.0100",
+      "step": "0.0010"
+     },
+     {
+      "end": "1.0000",
+      "start": "0.9900",
+      "step": "0.0001"
+     }
+    ],
+    "result": "",
+    "rules_primary": "",
+    "rules_secondary": "Kalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Governing League. All trademarks, logos, and brand names are the property of their respective owners.",
+    "settlement_bounds_type": "default",
+    "settlement_timer_seconds": 5,
+    "status": "active",
+    "strike_type": "custom",
+    "ticker": "KXMVECROSSCATEGORY-S2026GEJVNPK3VOLLD7H7-6SVUMW6K5",
+    "title": "yes Stephon Castle: 20+,no De'Aaron Fox: 8+,yes Chicago wins by over 1.5 points,no De'Aaron Fox: 3+",
+    "updated_time": "2026-11-14T03:16:26.696386Z",
+    "volume_24h_fp": "0.00",
+    "volume_fp": "0.00",
+    "yes_ask_dollars": "0.0000",
+    "yes_ask_size_fp": "0.00",
+    "yes_bid_dollars": "0.0000",
+    "yes_bid_size_fp": "0.00",
+    "yes_sub_title": "yes Stephon Castle: 20+,no De'Aaron Fox: 8+,yes Chicago wins by over 1.5 points,no De'Aaron Fox: 3+"
+   }
+  ]
+ }
+}

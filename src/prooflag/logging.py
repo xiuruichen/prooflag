@@ -41,3 +41,5 @@ def configure_logging(level: int = logging.INFO, redactor: Redactor | None = Non
     handler.setFormatter(JsonFormatter(redactor))
     root.addHandler(handler)
     root.setLevel(level)
+    # httpx logs every request at INFO (with full URLs); keep the signal, drop the noise.
+    logging.getLogger("httpx").setLevel(logging.WARNING)
