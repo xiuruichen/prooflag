@@ -30,6 +30,7 @@ EXPECTED_TABLES = {
     "market_tokens",
     "watch_allowlist",
     "watch_candidates",
+    "entity_aliases",
 }
 
 

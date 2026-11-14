@@ -1,0 +1,12 @@
+{
+ "version": 1,
+ "aliases": [
+  {
+   "alias": "MicroStrategy",
+   "cik": "0001050446",
+   "name": "Strategy Inc",
+   "reason": "former name (MicroStrategy Incorporated) of Strategy Inc; absent from company_tickers.json; CIK verified from EDGAR submissions JSON (docs/edgar-timing.md)",
+   "reviewer": "ai_assisted_review_2026-11-14 (user-approved)"
+  }
+ ]
+}

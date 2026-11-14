@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     allowlist_seed_path: Path = (
         Path(__file__).resolve().parents[2] / "config" / "watch_allowlist_seed.json"
     )
+    # Reviewed company aliases (e.g. former names) layered over the SEC ticker file.
+    entity_aliases_seed_path: Path = (
+        Path(__file__).resolve().parents[2] / "config" / "entity_aliases.json"
+    )
     # EDGAR window (America/New_York, weekdays) drives the price-snapshot cadence.
     edgar_window_start: str = "06:00"
     edgar_window_end: str = "22:00"
