@@ -1,0 +1,290 @@
+# Prooflag — Implementation Plan
+
+> Status: APPROVED with changes (see "Approval changes" below). Project root: `C:\dev\prooflag` (own git repo). DB and evidence locker: `C:\dev\prooflag\data\` (gitignored). No OneDrive, no nested repo.
+>
+> **Approval changes (applied throughout):** (1) Run F2 slice count FIRST as a standalone script, before F1 scaffolding; stop and report if NO-GO. (2) Benchmark Qwen3-8B + one non-Qwen ~7–9B control only; Qwen3-4B is a fallback only if 8B is too slow. (3) Gold rules set may sample closed/resolved markets to reach the ambiguous-deadline quota. (4) Price-snapshot cadence: tagged markets every 5 min during the EDGAR window, 30 min otherwise. (5) Timeline may be ~1.5 weekends; priority order if time runs short: slice count → store/ingest/SEC watcher → compiler → labeling → evaluator + gate → replay → web case files → notifications/ledger/weekly report.
+> **Context:** Prooflag is a personal, zero-cost research instrument that compares prediction-market resolution rules against the public documents (first SEC EDGAR) that settle them, and raises explainable, evidence-backed signals (evidence_gap, deadline_risk, ambiguity). It exists because rules like "by May 31" often hide whether the *event* or its *publication* must meet the deadline. Success = every alert reproducible from stored evidence, with measured accuracy; no trading.
+> **Global constraints:** Python 3.11+ (3.12.4 present); httpx, SQLite WAL, Pydantic v2, APScheduler, FastAPI, Jinja2, HTMX; SEC ≤ 2 req/s, declared User-Agent; temp 0 + fixed seed + pinned model hash; no network in tests; no paid services; no order placement; structured JSON logging (stdlib `logging` + JSON formatter) everywhere.
+> Environment verified: the home dir `C:\Users\chenf` is itself a git repo, so the project lives outside it at `C:\dev\prooflag` with its own repo (Q9/Q10 resolved). Python 3.12.4, Windows 11, 12 threads, 14.8 GB RAM, AMD iGPU (no usable CUDA), Ollama installed, no `llama-server`. Installed Ollama models are vision-language only (`qwen3-vl:2b-instruct`, `playbook-vl`); a text model must be pulled.
+
+## 0. Clarifying questions (answer or accept the default)
+
+(Numbering note: Q10–Q13 were added after recon and sit next to the question they relate to.)
+
+| # | Question | Default I will assume |
+|---|---|---|
+| Q1 | **RESOLVED:** Polymarket market "MicroStrategy sells any Bitcoin by May 31, 2026?", reported June–July 2026 with a UMA dispute and a lawsuit (per user, unverified until archived). Search closed Gamma markets for "MicroStrategy"/"Strategy" + "Bitcoin". | F5: bounded search of closed/archived Gamma markets plus Strategy's EDGAR submissions JSON for 2026-05-25..06-05. If still not found, the fixture is a **clearly labeled synthetic fixture**; no rule text is invented for the real market. |
+| Q2 | **Polymarket US API:** I could not verify a public market-data API. Do you have docs or a link? | Enum value `polymarket_us` is kept, but **no ingester is planned**. International Polymarket (Gamma/CLOB) is read-only data. |
+| Q3 | **SEC contact email for User-Agent** | `.env` value `PROOFLAG_CONTACT_EMAIL`; placeholder committed in `.env.example`, never your real address. |
+| Q4 | **Evaluator precision gate.** The Wilson 95% lower bound for 8/8 correct is only ~0.68; reaching 0.80 needs 16/16 correct *predicted-yes*. With 25 pairs and abstention preferred, the gate probably cannot open this weekend. Options: (a) grow the pairs set to ~100 so the ~40% test split holds ≥16 predicted-yes (≈60 pairs is not enough), (b) gate on a lower bound of 0.70, (c) keep evidence_gap disabled until live review labels accumulate. | **(c)**, with (a) as a later top-up from review-queue labels: evidence_gap ships disabled; gate rule = observed precision ≥ 0.95 AND Wilson lower bound ≥ `gate_lb` (default 0.80) AND ≥ `gate_min_yes` (default 16) *predicted-yes* items. Both knobs in config. |
+| Q10 | **RESOLVED:** home dir is a git repo; project uses its own repo at `C:\dev\prooflag` (not nested). | Done. |
+| Q11 | **deadline_risk scope.** The Strategy case (event before deadline, filing after) cannot be detected live from EDGAR alone before the filing appears. | MVP: (i) *structural* rule — market is publication- or ambiguous-deadline AND the form's legal filing-lag window (e.g. 8-K: 4 business days; verify before use) overlaps the deadline, so late publication is structurally possible; (ii) *post-hoc/replay* detection of acceptance > deadline with event_date ≤ deadline. Pre-filing occurrence feeds (on-chain, news) are phase 2. |
+| Q12 | **Outcome ledger / weekly summary** is required in the brief but low priority for a weekend. | Build the ledger (outcomes table + +1h/+6h/settle tracker job + `prooflag weekly` report command) in U7; if time runs out, ship the table and tracker, defer the report. Descope is recorded, not silent. |
+| Q13 | **"Meaningful" market (go/no-go).** | ≥ 20 live markets matching a document source AND each with 24h volume ≥ $1,000 or open interest ≥ $2,000. Numbers configurable in the script. |
+| Q5 | **"Publication" definition.** EDGAR has two times: acceptance datetime and the official filing date (filings accepted after 5:30 pm ET count as the next business day for most forms). | Store both. The deadline check records which one it used. A rule that does not say which one is an **ambiguity** trigger. |
+| Q6 | **Price thresholds** for evidence_gap (e.g. YES < 0.90 when evidence says yes) | `evidence_gap_max_price = 0.90`, configurable per run. |
+| Q7 | **Model tier:** this machine is the 16 GB CPU-only tier. OK to benchmark Qwen3-4B vs 8B vs a non-Qwen candidate, choosing by gold-set accuracy? | Yes. |
+| Q8 | **Labeling time:** 65 hand labels (40 rules + 25 pairs) is the weekend bottleneck (~3–4 h). OK to pre-fill labels with the model and have you correct them (with an anti-anchoring rule, see §6)? | Yes, but gold spec labels are written blind for the first 15. |
+| Q9 | **RESOLVED:** repo at `C:\dev\prooflag`; DB and locker under `C:\dev\prooflag\data\` (gitignored). | Done. |
+| Q14 | **Commit attribution:** the approval message left a template line unresolved ("say 'no Claude co-author/attribution lines' if you want that, otherwise delete this line"). | **Open.** No commits are made until you say which. Default if you say nothing: the harness attribution trailer. |
+
+## 1. Corrections to the brief (found in recon — treat as design changes)
+
+1. **EDGAR Atom feed has no acceptance time** (only an unlabeled `updated` with offset). Atom is used for **discovery only**. Acceptance time comes from `data.sec.gov/submissions/CIK##########.json` → `filings.recent.acceptanceDateTime` (UTC `Z`; e.g. an 8-K accepted 13:00:15Z = 08:00 ET). Friday task: cross-check that field against a second source (filing index "Accepted" stamp or the `.txt` header) on ≥10 filings, old and new, before any deadline logic depends on it.
+2. **EDGAR hours:** brief says 6 a.m.–10 p.m. ET; I could verify only 17 CFR 232.13 (5:30 pm cutoff for most forms; 10 pm for Forms 3/4/5, 144, 13D/G). Adaptive polling uses a configurable window, not a claimed fact.
+3. **Kalshi real field names:** `rules_primary`, `rules_secondary`, `close_time`, `latest_expiration_time`, `expected_expiration_time` (no plain `expiration_time`), prices as `*_dollars`, counts as `*_fp`. List endpoint `GET /markets` (limit ≤1000, `cursor`; empty cursor = last page). Candlesticks: `/series/{series_ticker}/markets/{ticker}/candlesticks`, batch `/markets/candlesticks`. Base URL (`https://external-api.kalshi.com/trade-api/v2` vs `https://api.elections.kalshi.com/trade-api/v2`) is confirmed by a live call in the Friday slice-count script. Unauthenticated rate limits are unpublished → assume ≤ 5 req/s.
+4. **Polymarket:** `GET gamma-api.polymarket.com/markets/keyset` (`after_cursor`, response `next_cursor`, `limit` 1–100, offset → 422). Prices are strings (`outcomePrices`, `volume`). Price history: `GET clob.polymarket.com/prices-history?market=<token_id>&interval=…&fidelity=…` (no auth, returns `{t,p}`).
+5. **Ollama** `format` accepts a JSON schema; llama.cpp supports GBNF and `json_schema`. Qwen3 thinking mode vs constrained decoding must be tested Friday (disable thinking; confirm schema is obeyed).
+
+## 2. Architecture
+
+```
+ Kalshi API ─┐                                   ┌──────────── EDGAR Atom (discovery)
+ Polymarket ─┴─> ingest/ ──> markets ──> compiler/ ──> rule_specs      │
+ (Gamma+CLOB)        │          │            ▲  (regex first, LLM 2nd, │
+                     │          │            │   span verifier)        ▼
+                     │          └──> linker/ (ticker→CIK) ──> watchers/sec ──> evidence locker
+                     │                                                   │  (raw doc, sha256,
+                     ▼                                                   │   acceptance vs fetch time)
+                price_snapshots                                          ▼
+                     │                                            evaluator/
+                     │                                  LLM layer ──> deterministic gate
+                     │                                                   │
+                     └───────────────> signals/ (rules + dedupe + event log)
+                                                   │
+                         ┌─────────────────────────┼───────────────────────┐
+                         ▼                         ▼                       ▼
+                    web/ case files          notify/ desktop         outcomes ledger
+                    (FastAPI+HTMX+SSE)       (win toast)             (+1h, +6h, settle)
+ Cross-cutting: store/ (SQLite WAL, append-only), provenance, evals/, replay/, llm/ provider iface
+```
+
+### 2.1 SQLite schema (WAL, foreign keys ON; "append-only" tables get triggers that RAISE on UPDATE/DELETE)
+
+| Table | Key columns | Notes / indices |
+|---|---|---|
+| `markets` | PK `(venue, market_id)`; title, rules_text, rules_secondary, resolution_source, close_time_utc, status, raw_json_sha | first_seen_at, last_seen_at; idx `(status)`, `(close_time_utc)` |
+| `market_versions` (append-only) | PK `(venue, market_id, rules_sha)`; rules_text, seen_at | detect rule edits; every spec points to a rules_sha |
+| `market_tags` | PK `(venue, market_id, tag)`; reason, matched_span | why a market was tagged (sec/court/fed_register/press) |
+| `price_snapshots` (append-only) | PK `(venue, market_id, outcome, ts_utc)`; price, volume, open_interest, source(`snapshot|history`) | idx `(venue, market_id, ts_utc)` |
+| `artifacts` (append-only) | PK `sha256`; kind, byte_len, path, source_url, fetched_at_utc, accepted_at_utc NULL, accepted_at_source, normalizer_ver | the evidence locker index; files stored under `locker/aa/bb/<sha>` |
+| `filings` | PK `accession`; cik, form, filed_date, accepted_at_utc, acceptance_cross_checked BOOL, primary_doc_sha, index_sha | idx `(cik, accepted_at_utc)`, `(form)` |
+| `entities` | PK `entity_id`; name, cik, ticker, link_status(`resolved|ambiguous|unresolved`), candidates_json, link_method | unresolved → review queue |
+| `rule_specs` (append-only) | PK `spec_id`; market key, rules_sha, spec_json, valid BOOL, failed_checks_json, provenance_id | latest-valid view `v_current_spec` |
+| `evaluations` (append-only) | PK `eval_id`; spec_id, filing accession, doc_sha, llm_output_sha, decision(`yes|no|unclear`), gate_json, final_decision, provenance_id | idx `(spec_id, accession)` UNIQUE with provenance |
+| `llm_calls` (append-only) | PK `call_id`; input_sha, model_name, model_file_sha256, prompt_tmpl_sha, params_json, output_text, output_sha, latency_ms | cache key `(input_sha, model_file_sha256, prompt_tmpl_sha, params)` → replay reads these |
+| `signals` | PK `signal_id`; type, market key, eval_id NULL (ambiguity/structural signals have none), spec_id, accession NULL, rules_sha, dedupe_key UNIQUE, variant, shadow BOOL, price_at_signal, status | idx `(type, market)` |
+| `signal_events` (append-only) | `(signal_id|NULL, ts, event, reason)` | every fire AND every suppression with reason |
+| `outcomes` | PK `(signal_id, horizon)`; horizon in `1h,6h,settle`; price, resolved_value | filled by outcome tracker |
+| `reviews` | PK `(signal_id, reviewer, ts)`; label `correct|incorrect|ambiguous`, note | feeds gold sets |
+| `provenance` (append-only) | PK `provenance_id`; input_hashes_json, model_name, model_sha256, prompt_sha, code_git_sha, dirty BOOL, created_at | referenced by every derived row |
+| `poll_log` | `(source, ts, ok, latency_ms, items, err)` | health page |
+
+All timestamps stored as UTC ISO-8601 plus the original zone string where relevant. Deadlines stored as `(deadline_utc, deadline_tz_original, deadline_text)`.
+
+## 3. Modules and interfaces
+
+Layout: `src/prooflag/{ingest,compiler,linker,watchers,evaluator,llm,signals,store,web,notify,evals,replay,config}/`; `tests/`, `fixtures/`, `scripts/`, `.github/workflows/ci.yml`, `pyproject.toml`, `.pre-commit-config.yaml`, `.env.example`.
+
+- **config:** `Settings(BaseSettings)` from `.env`: contact email, db/locker paths, thresholds, rate limits, model name, `llm_endpoint`. No secrets committed.
+- **store:** `Db` (WAL, `busy_timeout`), `Locker.put(bytes, meta) -> sha`, `Locker.get(sha)`, migration runner (plain SQL files, numbered), append-only triggers, `Provenance.record(...)`. Single writer discipline: all writes through one connection pool wrapper.
+- **ingest:** `MarketSource` Protocol: `list_markets(since) -> Iterator[RawMarket]`, `price_history(market, start, end)`, `snapshot_prices()`. Impl: `KalshiSource`, `PolymarketSource` (keyset pagination). Common `RawMarket` normalizes to `markets` rows. `Tagger.tag(market) -> list[Tag(reason, span)]` with regex lexicon (EDGAR/SEC, 8-K/10-Q/10-K/Form 4/S-1, "docket", "court", "Federal Register", "press release"…). Stores everything; tags the subset.
+- **compiler:** `RuleSpec` (Pydantic v2, strict, `extra=forbid`). Pipeline: `deterministic_extract(rules) -> PartialSpec` (dateparser/regex for deadlines with explicit tz handling, form-type lexicon, ticker/company regex) → `llm_fill(partial, rules)` for remaining fields → `SpanVerifier` (every field's `source_spans` must be an exact substring after canonical whitespace normalization; failure → field set to `ambiguous`/null and spec marked `valid=false` with reason) → `compile_market(market) -> RuleSpecRecord`. `deadline_applies_to` defaults to `ambiguous` unless a deterministic phrase rule or a verified LLM span supports otherwise.
+- **linker:** `EntityLinker.resolve(name|ticker) -> LinkResult(status, cik, candidates)`. Source: SEC `company_tickers.json` cached locally with ETag/age; exact ticker match, then normalized-name exact match; fuzzy only produces *candidates* (never auto-accept). Multi-match or none → `ambiguous|unresolved` → review queue. `CourtLinker` Protocol stub (phase 2).
+- **watchers:** `SourceWatcher` Protocol: `poll() -> list[DocumentEvent]` where `DocumentEvent(source, doc_id, entity_id, form, filed_date, accepted_at_utc, url)`. `SecWatcher`: Atom feed (discovery, latest 8-K/10-Q/4 pages) + per-watched-CIK `submissions` JSON (acceptance time, authoritative) → fetch primary doc → `Locker.put`. `RateLimiter` (token bucket ≤2 req/s global, shared by all SEC calls, stats exposed). Adaptive scheduler: fast (e.g. 60 s) in configured window (06:00–22:00 ET weekdays), slow (15 min) otherwise. Records `detected_at_utc − accepted_at_utc` lag. Declared UA from config; 429/403 → exponential backoff + health alarm. `CourtWatcher`/`FedRegWatcher` interfaces only.
+- **llm:** `LLMProvider` Protocol: `generate(prompt, schema, *, seed, temperature=0) -> LLMResult(text, model_name, model_sha256, latency)`. Impl `OllamaProvider` (primary; `format=<json schema>`, `think=false`, `options: seed, temperature 0, num_ctx`), `LlamaServerProvider` (OpenAI-compatible `response_format`/`json_schema`). Pinned model file sha256 recorded (hash of the GGUF blob). `CachedProvider` wraps with the `llm_calls` table (cache key above) → replay never re-infers. `FakeProvider` for tests.
+- **evaluator:** `Evaluator.evaluate(spec, doc) -> Evaluation`. Text prep: one canonical `normalize_filing_text(html) -> str` (BeautifulSoup/lxml; strip tags, collapse whitespace, NFKC; function-versioned; its output is stored and hashed so the verbatim check is reproducible). Long docs: chunk by section/Item, score only chunks that pass lexical prefilter (entity+keywords), pass top-k to LLM. LLM layer returns schema (§5). Deterministic gate (§8). Any gate failure → `final_decision=unclear` + `failed_checks`.
+- **signals:** `SignalEngine.process(evaluation, price_ctx) -> list[SignalEvent]` with dedupe key `(type, market, accession)`, cooldowns, config thresholds; writes `signal_events` for fires and suppressions. Gate flag `evidence_gap_enabled` is derived from the latest EVAL report, not hand-set.
+- **web:** FastAPI + Jinja2 + HTMX, SSE endpoint `/events` for live updates. Pages: `/` (signals + queue counts), `/case/{signal_id}`, `/review`, `/markets`, `/health`, `/eval`. Binds 127.0.0.1 only. Source-span highlighting server-side (offsets verified, not regex re-search).
+- **notify:** `Notifier` Protocol; `WindowsToastNotifier` (try `winotify`/`windows-toasts`, fall back to PowerShell BurntToast-free `System.Windows.Forms.NotifyIcon`, verify Friday which works) linking to `http://127.0.0.1:PORT/case/ID`; `NtfyNotifier` documented only.
+- **evals:** gold fixtures loader, metrics, `EVAL.md` generator, labeling CLI/web helper, calibration bins.
+- **replay:** `Replay.run(fixture) -> ReplayReport` using stored markets, locker documents, `price_snapshots`, and `llm_calls` cache, with a simulated clock injected through every time-dependent function (no `datetime.now()` in core logic; a `Clock` Protocol).
+
+## 4. Local-model plan
+
+Hardware tiers (sizes from Qwen3 GGUF repos; fit estimates are my inference):
+
+| Tier | Model (GGUF Q4_K_M unless noted) | Disk | Use |
+|---|---|---|---|
+| 8 GB RAM, CPU | Qwen3-4B (2.5 GB) | 2.5 GB | fallback |
+| **16 GB RAM, CPU (this machine, ~14.8 GB)** | Qwen3-8B Q4_K_M (5.0 GB) / Q5_K_M (5.85 GB) | 5–6 GB | **primary candidate** |
+| 12 GB GPU | Qwen3-14B Q4_K_M (9 GB), tight | 9 GB | stretch |
+| any | one non-Qwen ~7–9B instruct (e.g. Llama/Gemma/Phi class) | ~5 GB | control, to avoid single-family bias |
+
+**Benchmark set (approved):** Qwen3-8B and one non-Qwen ~7–9B control only. Qwen3-4B is pulled and benchmarked only if 8B proves too slow.
+
+Candidates are chosen by **gold-set results**, not preference. Benchmark harness (`scripts/bench_models.py`): for each candidate, run the **dev split only** of both gold sets (test split is reserved for the single frozen gating run) at temp 0, seed fixed; report field accuracy, evaluator precision/recall/abstain, schema-valid rate, median/p95 latency, tokens/s, RAM. Selection rule: highest evaluator Wilson-lower-bound precision, then lowest latency, subject to RAM < 10 GB. Note the iGPU is not assumed usable; Vulkan llama.cpp build is an optional Saturday experiment only.
+
+Structured output: Ollama `format` = Pydantic `model_json_schema()` (flattened: no `$ref`/`oneOf` surprises; schemas kept simple and tested), thinking disabled; schema validity is still re-validated by Pydantic (belt and braces). Reproducibility: temp 0, fixed `seed`, pinned model file sha256 (`ollama show --modelfile` → blob digest, recorded per call), `num_ctx` fixed and recorded. Known caveat: bit-exact determinism across hardware/threads/Ollama versions is not guaranteed, so **replay is built on cached LLM outputs**, and "re-inference drift" is a separate reported metric, not a pass/fail test.
+
+Friday tasks: `ollama pull` a text model; run 5-prompt smoke test for schema obedience with thinking off; record load time and tokens/s.
+
+## 5. Prompt designs and schemas
+
+### 5.1 Compiler (LLM fills only what deterministic extraction left open)
+
+Output schema (strict):
+```json
+{
+  "trigger": "string",
+  "evidence_type": "sec_filing|court_docket|press_release|other",
+  "entity_name": "string|null",
+  "acceptable_forms": ["string"],
+  "deadline_text": "string|null",
+  "deadline_applies_to": "publication|occurrence|ambiguous",
+  "revisions_count": "boolean|null",
+  "ambiguity_notes": ["string"],
+  "headline_conflict": {"conflict": "boolean", "note": "string|null"},
+  "source_spans": {
+    "trigger": "string|null", "deadline": "string|null", "deadline_applies_to": "string|null",
+    "evidence_type": "string|null", "entity": "string|null", "revisions_count": "string|null",
+    "headline_conflict": "string|null", "acceptable_forms": ["string"]
+  },
+  "confidence": "number 0..1"
+}
+```
+Deterministic post-processing: spans verified verbatim; `deadline_text` parsed by code into `deadline_utc` + original tz (naive times without tz → `ambiguous`, never assumed); `entity.cik` comes only from the linker, never the LLM; `compiler_confidence` = min(self-report, 1.0 if all spans verified else 0.0 cap) and is treated as uncalibrated until §6 calibration exists.
+
+System prompt skeleton (hash recorded): "You extract fields from prediction-market resolution rules. Copy spans exactly from the text. If the rules do not say whether the deadline applies to when the event happens or when it is publicly reported by the source, answer `ambiguous`. Never infer a field you cannot quote. Output only JSON matching the schema."
+
+Few-shot examples (templates; real ones are drawn from gold set once labeled, none invented as if real):
+1. *Clear publication:* rules say "resolves Yes if an SEC filing **filed** on or before Dec 31, 2026 11:59 PM ET reports…" → `deadline_applies_to: publication`, span = "filed on or before Dec 31, 2026 11:59 PM ET".
+2. *Clear occurrence:* "if the company **sells** any BTC between X and Y, as confirmed by any public source" → `occurrence`.
+3. ***Ambiguous deadline (required):*** "Resolves Yes if Acme Holdings sells any Bitcoin by May 31, 2026 (11:59 PM ET). The primary resolution source will be Acme's official SEC filings." → `deadline_applies_to: ambiguous`; `ambiguity_notes`: ["Deadline attaches to the sale ('by May 31') but the resolution source is a filing that may be published after the deadline; text does not say whether post-deadline publication of a pre-deadline sale counts."]; spans quote both clauses. **Fictional entity** (Acme) on purpose: the Strategy rule text is a replay fixture and must never be a few-shot, and no real rule text is invented.
+4. *Headline conflict:* the compiler also receives the market `title`; output field `headline_conflict: {conflict: bool, note: string|null, spans: [...]}`; gold set includes ≥5 cases (title says "by date" but rules measure publication, etc.).
+
+**Stored `RuleSpec` = your schema plus additions:** `headline_conflict`, `rules_sha`, `deadline_utc`/`deadline_tz_original`, `deadline_basis` (`acceptance|filing_date|unspecified`), `compiler_provenance_id`, `valid`. In the *LLM output schema* `source_spans` is a **fixed-key object** (one optional string per field name, plus `trigger`, `deadline`, `deadline_applies_to`, `acceptable_forms` list-of-strings), not open-keyed, to stay compatible with constrained decoding; code reassembles it into the stored list-valued form.
+
+**Eval hygiene:** few-shot rows are excluded from scoring; gold sets are split `dev` (≈60%, used for prompt/model tuning) and `test` (≈40%, touched only for the gating run); prompts are frozen (hash recorded) before the gating run; `EVAL.md` reports dev and test separately and states the residual optimism.
+
+### 5.2 Evaluator
+
+Few-shot output shapes are the schema below, e.g. `{"satisfied":"yes","quote":"<verbatim sentence>","quote_chunk_id":"c3","event_date_text":"May 28, 2026","event_date_quote":"<verbatim>","confidence":0.9,"reasoning":"..."}`; compiler examples 1–2 likewise are full JSON per the §5.1 schema, written when gold rows exist.
+
+Input: the compiled spec (trigger, entity, forms, deadline semantics) + normalized doc chunks (with chunk ids). Output schema:
+```json
+{
+  "satisfied": "yes|no|unclear",
+  "quote": "string|null",
+  "quote_chunk_id": "string|null",
+  "event_date_text": "string|null",
+  "event_date_quote": "string|null",
+  "confidence": "number 0..1",
+  "reasoning": "string (<=80 words)"
+}
+```
+Prompt rules: answer `yes` only with a verbatim quote that itself states the triggering event; `no` only when the document affirmatively contradicts or the doc is plainly about the entity and states the opposite; everything else `unclear`. `event_date` is **not trusted**: it needs its own verbatim `event_date_quote` and a deterministic parse (code), else the date is treated as unknown and any occurrence-based check → `unclear`.
+Few-shot (from gold set when labeled): (a) 8-K item 8.01 stating a purchase/sale with quote → yes; (b) an 8-K on unrelated topic → unclear (not "no"); (c) filing mentioning a *plan* to sell → unclear; (d) negation ("did not sell") → no.
+
+## 6. Gold sets, labeling, metrics, gates
+
+- **Fixtures (versioned):** `fixtures/gold/rules_v1.jsonl` (~40 rules → expected spec fields) and `fixtures/gold/pairs_v1.jsonl` (~25 `(rule, doc)` → yes/unclear/no with expected quote). Each row stores market id, rules_sha, doc sha, label, labeler, labeled_at, label_version. Documents are saved into `fixtures/` (small excerpts + sha) so tests need no network.
+- **Selection:** `scripts/draft_gold.py` samples tagged markets stratified by venue/form type/deadline wording (force ≥8 ambiguous-deadline cases and ≥8 non-trivially-negative pairs). Pairs include **hard negatives** (right entity, wrong event; right event, wrong entity; late filing) because those are where precision fails.
+- **Labeling helper:** `prooflag label` CLI (and `/review` page): shows rule/document side by side, you fill fields; the first 15 spec labels are blind (no model prefill) to measure anchoring; later ones may show model output hidden behind a toggle. Every label is versioned; disagreements between model and you are logged.
+- **Metrics (`EVAL.md`, generated, with git SHA + model hash + date):**
+  - Compiler: per-field exact-match accuracy, with `deadline_applies_to` (3-class confusion matrix, abstain rate) and deadline (UTC equality) reported separately; span-verification pass rate.
+  - Evaluator: precision, recall, abstain rate for `yes`; confusion matrix; **Wilson 95% intervals** (n is small, so no point estimates without intervals); deterministic-gate catch rate (how many LLM `yes` were downgraded, and whether correctly).
+  - Calibration: reliability bins of confidence vs correctness, ECE, with the n-per-bin shown; confidence is **not** used for decisions beyond a threshold until bins show monotonicity.
+- **Gates (enforced in code, read from latest `EVAL` JSON):**
+  1. `evidence_gap` disabled unless, on the **test split**, evaluator `yes` precision ≥ 0.95 observed AND Wilson lower bound ≥ `gate_lb` (0.80) AND ≥ `gate_min_yes` (16) predicted-yes items (Q4). Expect it to stay disabled this weekend; that is the intended, honest outcome.
+  2. `deadline_risk`/`ambiguity` need, on the rules **test split**, `deadline_applies_to` accuracy ≥ 0.85 with Wilson LB reported, and ambiguous-class recall ≥ 0.80 **only if ≥ 8 ambiguous test rows exist** (so the rules set is sampled with ≥ 20 ambiguous rows overall); otherwise these signals ship in "shadow mode" (logged and shown, no notification). Shadow mode is the expected weekend outcome.
+  3. Any model or prompt change invalidates the gate until the evals are rerun (gate keyed on `(model_sha, prompt_sha)`).
+
+## 7. Weekend schedule (1–2 h tasks, each with acceptance criteria)
+
+**Order is conditional: Friday slice count decides everything below.**
+
+**Friday night (approved order: F2 first, standalone, before any scaffolding; stop and report on NO-GO)**
+- F1 (1.5 h, runs AFTER F2 passes GO): `git init` already done at `C:\dev\prooflag` (own repo); repo scaffold: `pyproject.toml` (uv; httpx, pydantic, apscheduler, fastapi, jinja2, hypothesis, respx), ruff, mypy strict config, pre-commit, pytest, CI file, `.env.example`, JSON logging setup (`prooflag.logging`). Commits in this repo: follow your jetbridge rule only if you say it applies; default per harness attribution. *Accept:* `ruff`, `mypy`, `pytest` all green on a smoke test; CI runs on push.
+- F2 (2 h): **`scripts/slice_count.py`** (go/no-go thresholds per Q13): page through all open Kalshi and Polymarket markets (conservative rate limits), apply tagger, output a table `tag × venue × count × total volume/OI` + top 30 markets by volume. Confirms Kalshi base URL by live call. *Accept:* script runs end-to-end, writes `slice_report.md`. **GO/NO-GO (Q13): ≥ 20 live markets with an EDGAR/court/press-release source, each 24h volume ≥ $1,000 or OI ≥ $2,000.** If fewer, stop and propose widening scope (e.g. add Federal Register, official-statistic sources, earnings-release markets) before building further.
+- F3 (1 h): Model setup: `ollama pull` Qwen3-8B and one non-Qwen ~7–9B control (size ≤ 6 GB); pull Qwen3-4B only if 8B is too slow; schema-obedience smoke test with thinking off; record tokens/s. *Accept:* 5/5 schema-valid outputs, model blob sha256 captured, latency table.
+- F4 (45 min): EDGAR timing validation: pull `submissions` JSON for 10+ filings (Strategy + others, old and new), cross-check `acceptanceDateTime` vs filing-index page "Accepted" stamp. *Accept:* written note in `docs/edgar-timing.md`: field semantics confirmed, or the discrepancy explained.
+- F5 (45 min): Locate/archive the Strategy fixture (Q1) from Gamma closed markets + submissions JSON. *Accept:* real archived rule text, market id, filing accession and acceptance time saved to `fixtures/strategy_2026_05/`, or an explicit "NOT FOUND — synthetic" marker.
+
+**Saturday**
+- S1 (2 h): `store/` (schema, migrations, append-only triggers, locker, provenance). *Accept:* tests prove UPDATE/DELETE on append-only tables fail; same bytes → same sha, one file; provenance rows complete.
+- S2 (2 h): `ingest/` Kalshi + Polymarket + tagger + price snapshots/history. *Accept:* recorded-fixture tests pass; a live run stores ≥ 1 page of each; tags carry reason+span; cursor pagination tested incl. empty last page.
+- S3 (1.5 h): `linker/` + SEC ticker cache. *Accept:* unambiguous names resolve, multi-match/unknown go to review queue (property test: never returns a CIK when candidates ≠ 1).
+- S4 (2 h): `watchers/sec` + rate limiter + acceptance-time capture + adaptive polling + health logging. *Accept:* live poll fetches a filing, stores acceptance vs fetch time, limiter test proves ≤ 2 req/s under load, lag metric recorded.
+- S5 (2 h): `compiler/` deterministic extractor + LLM fill + span verifier + deadline tz parsing. *Accept:* hypothesis tests on tz/deadline parse (DST edges, naive times → ambiguous); span verifier rejects non-verbatim; compiles ≥ 90% of tagged markets to a valid or explicitly-invalid spec.
+- S5b (1.5 h): `evals/` core + `scripts/draft_gold.py` + `prooflag label` CLI (needed before labeling): fixture loader, dev/test split by stable hash of market id, Wilson/ECE/confusion metrics, label CLI. *Accept:* metrics unit-tested against hand-computed values; CLI writes a valid JSONL row.
+- S6a (2 h): **Labeling session 1** (you): rules gold set (~40; ≥20 ambiguous-deadline across set, ≥5 headline-conflict; first 15 blind; **may sample closed/resolved markets** to reach the ambiguous quota). *Accept:* `rules_v1.jsonl` committed; first compiler accuracy report generated.
+- S6b (1.5 h): **Labeling session 2** (you): pairs gold set (~25; needs documents from S4 + specs from S5). *Accept:* `pairs_v1.jsonl` committed.
+- S7 (45 min, then runs overnight): `scripts/bench_models.py` kicked off on **dev split** of both sets for all candidates (resumable, cached in `llm_calls`). Needs a minimal evaluator LLM call, so S7 starts after a stub evaluator prompt exists (written in S6b downtime); the full evaluator + gate is U1.
+
+**Sunday**
+- U1 (2 h): `evaluator/` LLM layer + deterministic gate (a–d) + text normalizer. *Accept:* gate unit tests for each failure mode (non-verbatim quote, wrong form, wrong CIK, post-deadline acceptance, tz boundary cases) all downgrade to `unclear` with the failed check recorded.
+- U2 (1.5 h): Read overnight benchmark, choose model by §4 rule, freeze prompts (hash), run the single **test-split gating run**, generate `EVAL.md`. *Accept:* `EVAL.md` with dev/test reported separately, intervals, calibration, confusion matrices; gate state written to the `EVAL` JSON.
+- U3 (1.5 h): `signals/` engine (three rules, dedupe, cooldown, event log, gate reading `EVAL`). *Accept:* each suppression reason has a test; evidence_gap stays off if gate not met.
+- U4 (2 h): `web/` case-file page, review queue, health page, SSE. *Accept:* case page shows every item in the brief's "Output: case files" list (market+rule text, spec with highlighted spans, doc with highlighted quote, every check pass/fail, acceptance vs deadline vs detection times, price at signal/+1h/+6h/settlement, provenance); manual click-through; labeling writes `reviews`.
+- U5 (45 min): `notify/` desktop toast linking to case. *Accept:* toast appears on a test signal and the link opens the case.
+- U6 (2 h): `replay/` + Strategy fixture replay + deterministic-replay test. *Accept:* replaying stored evidence twice yields byte-identical decisions; Strategy replay reports whether/when deadline_risk or ambiguity would fire and the lead time (if the real market was archived; otherwise run on the synthetic fixture and say so in the report).
+- U6b (45 min): `prooflag run` (single APScheduler process: pollers, price snapshots, outcome tracker; **snapshot cadence: tagged markets every 5 min inside the EDGAR window, every 30 min otherwise**; the cadence job is built with S2 ingest so history accrues from Saturday) + CI check that fails on trading-endpoint strings (`/orders`, `create_order`, `place_order`) in `src/`. *Accept:* process starts, jobs register, CI check red on a planted string.
+- U7 (1.5 h; the weekly report is the first thing cut): outcome ledger (`outcomes` filler via APScheduler at +1h/+6h/settlement using price snapshots/history), `prooflag weekly` report, README, `EVAL.md` final, handoff notes. *Accept:* ledger test with simulated clock fills the three horizons; fresh clone + `.env` → `pytest` green.
+
+**Timing notes:** Friday tokens/s decides wall-clock for U2. Roughly 65 items × 3–4 models on CPU is hours, so the model benchmark runs **overnight Saturday→Sunday** via `scripts/bench_models.py` (resumable, results cached in `llm_calls`); Saturday S6 labeling produces the data it needs. APScheduler runs the pollers, outcome tracker and price snapshots in a single `prooflag run` process.
+
+**Cut line / priority order (approved; ~1.5 weekends):** slice count → store/ingest/SEC watcher → compiler → labeling → evaluator + gate → replay → web case files → notifications/ledger/weekly report. Later items are cut first.
+
+## 8. Signal rules and the deterministic gate
+
+**Gate (all must pass, else `unclear` and the failed check is recorded):**
+(a) `quote` appears verbatim in the stored normalized document (and `quote_chunk_id` exists); (b) deadline comparison in UTC using the timestamp the spec's `deadline_applies_to` demands: `publication` → acceptance datetime (and official filing date recorded alongside; if they straddle the deadline, result is `unclear`/ambiguity); `occurrence` → parsed `event_date` (verbatim-quoted, code-parsed) else `unclear`; `ambiguous` → evaluate **both** readings (acceptance time and parsed event date vs deadline); pass only if both pass, otherwise `unclear` with both results recorded; (c) `form ∈ acceptable_forms` (when specified; unspecified → recorded as "no constraint", not a pass); (d) filer CIK == entity CIK from linker (unresolved → fail).
+
+**Signals:**
+- `evidence_gap`: final decision `yes` AND gate all pass AND confidence ≥ `eg_min_conf` (default 0.8) AND price of the matching outcome ≤ `evidence_gap_max_price` (default 0.90, Q6) AND gate-enabled (§6). 
+- `deadline_risk` (boolean conditions, all required; see Q11):
+  - **Structural (live, pre-event):** spec `valid` AND `deadline_applies_to ∈ {publication, ambiguous}` AND `evidence_type == sec_filing` AND `0 < hours_to_deadline ≤ dr_hours` (default 72) AND no satisfying filing yet (latest evaluation for the spec is not `yes`) AND the form's legal filing-lag window extends past the deadline (lag table in config, **each entry verified against SEC rules before use**, e.g. 8-K 4 business days) AND market volume ≥ `dr_min_volume`.
+  - **Post-hoc (replay/live after the fact):** uses `content_yes` = LLM `yes` with gates (a), (c), (d) passing and gate (b) excluded (the deadline gate would otherwise turn it into `unclear`); `content_yes`, `event_date` (verbatim-quoted, code-parsed) ≤ deadline, but acceptance time > deadline (the Strategy pattern) → fire with `variant=late_publication`.
+  - No pre-filing occurrence data is used in the MVP; an occurrence feed (e.g. on-chain) is phase 2. The plan states honestly that live detection before the filing is *structural risk*, not evidence of occurrence.
+- Defaults: `dr_min_volume = $1,000` 24h volume, `amb_min_volume = $1,000`, `amb_days = 14`, all config.
+- `ambiguity`: spec has `deadline_applies_to == ambiguous` or a headline/rule conflict note, on a market with volume ≥ `amb_min_volume` and ≤ `amb_days` to close. Fires once per `(market, rules_sha)`.
+- All signals: dedupe on `(type, market, accession|rules_sha)`; cooldown per market (default 6 h); every fire or suppression writes `signal_events` with a reason code (`below_conf`, `price_too_high`, `gate_disabled`, `duplicate`, `cooldown`, `gate_fail:<check>`).
+
+## 9. Testing plan and fixtures
+
+- `pytest` with recorded HTTP (via `respx`/`pytest-httpx`; network blocked by a conftest autouse fixture). `hypothesis`: deadline parse, tz conversion, DST transitions, acceptance-vs-deadline comparison, linker invariants, span verifier (substring with whitespace normalization), rate limiter.
+- **Replay determinism test:** run pipeline on stored evidence with the `llm_calls` cache twice with a fixed injected clock; assert identical decisions and provenance-input hashes. Separate non-failing report: re-inference drift.
+- `mypy --strict` on `store`, `compiler`, `evaluator`, `signals`, `llm`; ruff everywhere; pre-commit; GitHub Actions: ruff, mypy, pytest (no model needed, `FakeProvider`).
+- **Fixture list:** Kalshi market page (SEC rule, plain rule, empty last cursor); Polymarket keyset pages (incl. 422 offset response); prices-history sample; EDGAR Atom page; `submissions` JSON (Strategy); company_tickers sample (with ambiguous names); 8-K docs: positive, unrelated, plan-only, negation, amended (8-K/A); Strategy May-2026 case (real if archived, else synthetic, labeled); acceptance-after-5:30pm filing; DST-boundary deadline; naive-timezone deadline; non-verbatim quote case.
+
+## 10. Risks and mitigations
+
+| Risk | Mitigation |
+|---|---|
+| Too few markets in slice | F2 go/no-go; widen scope before building |
+| SEC throttling/UA block | ≤2 req/s global limiter, declared UA, backoff, health alarm, cache everything |
+| Atom feed lacks acceptance time / field semantics wrong | submissions JSON as authority, F4 cross-check, record both times |
+| Local model too slow/inaccurate on CPU | lexical prefilter + chunking, 4B/8B benchmark, cache by input hash, abstain by default |
+| Constrained decoding quirks (thinking mode, `$ref`) | flat schemas, thinking off, Pydantic revalidation, Friday smoke test |
+| Timezone/DST bugs | UTC internally, original tz stored, hypothesis tests, naive times → ambiguous |
+| Rule edge cases (amendments, multiple filers, 8-K/A, "reported by" wording) | form lexicon includes amendments flag; unclear on mismatch; gold hard negatives |
+| Venue API changes / unpublished limits | recorded fixtures + contract tests, schema-tolerant parsing logged not crashed, conservative rates, base URL verified live |
+| Data gaps (no price history) | own snapshots from day 1; replay uses whatever exists and reports gaps |
+| Small gold sets → false confidence | Wilson intervals, minimum n, gate on lower bound, labeled "n=…" everywhere |
+| LLM self-confidence uncalibrated | not used for decisions beyond a threshold until calibration shown |
+| OneDrive vs SQLite WAL | Project at `C:\dev\prooflag`, data in gitignored `data\` (Q9) |
+| Strategy fixture unverifiable | Q1; synthetic fixture labeled as such; no false claims in docs/EVAL |
+| Scope creep to trading | no order code anywhere; CI grep check for trading endpoints |
+
+## 11. Phase 2 roadmap
+
+CourtListener watcher (docket-ID linker, authenticated polling ~5,000 q/h, bounded); Federal Register and newsroom/press-release watchers; occurrence-side data (e.g. on-chain feed for Strategy-type markets) so `deadline_risk` can fire before publication; Polymarket US ingester once docs verified; automated weekly digest delivery of the ledger summary (the `prooflag weekly` command itself ships in U7); API/MCP tool exposing `get_case`, `list_signals` read-only; public dispute archive of resolved-ambiguity cases; optional self-hosted ntfy push.
+
+## 11b. Review focus (inputs most likely to bite; each gets a test in the owning task)
+
+1. Filing accepted 5:30–10 pm ET: acceptance date vs official filing date differ → both stored, deadline check names the basis (S4/U1).
+2. Amended filings (8-K/A), multiple filers/co-registrants, wrong-entity mentions → gate (c)/(d) → `unclear` (U1).
+3. Naive or ambiguous timezone/DST deadlines, "end of day", "midnight" → `ambiguous`, never assumed (S5).
+4. Rule edited after compile (new `rules_sha`) → old spec/signals invalidated, recompile (S2/S5).
+5. Huge or malformed filing HTML / exhibits-only filings / empty feed pages → normalizer and chunker degrade to `unclear`, never crash the poller (S4/U1).
+
+## 12. Verification of the plan itself (what "done" looks like at weekend end)
+
+1. `pytest`, `ruff`, `mypy --strict` (core) green locally and in CI.
+2. `python scripts/slice_count.py` produces `slice_report.md`.
+3. `EVAL.md` exists with intervals, confusion matrices, calibration, model hash, git SHA.
+4. Replay twice → identical decisions (test passes).
+5. A synthetic or real Strategy fixture replays to a documented signal outcome.
+6. Local web app on 127.0.0.1 shows a case file with every item listed in the brief; desktop toast opens it.
+7. `evidence_gap` gate shows disabled/enabled with the metric that decided it.
