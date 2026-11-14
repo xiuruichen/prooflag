@@ -279,6 +279,25 @@ The verdict above is computed from the pre-registered rules. This section is my 
 
 **Limitations stated in advance.** One issuer, two events, one correlated cluster per event; hindsight in market-direction assignment is limited to reading settled outcomes; Polymarket price history has no bid/ask; the 5-minute and 70%/30% thresholds are conventions fixed here, not estimated.
 
+---
+
+## Amendment 1 (dated 2026-11-14 04:52 UTC, PRE-EVENT)
+
+**Written before either event has occurred.** At 2026-11-14 04:45 UTC EDGAR still showed no `EFFECT`, `424B*` or `8-A12B` filing for Anthropic, PBC (latest filing: FWP accepted 2026-11-12 11:08:43Z). This amendment only tightens data sources and adds a decision condition; it does not change any event definition, market selection rule, definition of "moved", or threshold of the original text above.
+
+**A1. Price paths come from trade-level history; snapshots are a flagged fallback.**
+- **Kalshi:** the trades endpoints (live `/markets/trades`, historical `/historical/trades`): exact timestamp, price and size per trade.
+- **Polymarket:** trade-level history from the public data API v2 (`/v2/trades?conditionId=...`: timestamp in seconds, price, size, side, token id; verified reachable without a key on 2026-11-14; the v1 API is retired). If that endpoint is unavailable at analysis time, fall back to CLOB `prices-history` at the FINEST fidelity the API accepts (try 1 minute, then 5, then 10) and record which fidelity was used. Third-party wallet fields are discarded and never stored.
+- **Our own 5-minute snapshots** (bid / ask / last) are used only as a flagged last resort for a market that has neither trade-level nor CLOB history for the window; any result using them is labelled "snapshot-resolution" and is excluded from the verdict counts for that event unless fewer than 3 markets remain without it (then the event is INSUFFICIENT).
+- The data source used for each market is recorded in the output table.
+
+**A2. Capacity and the "pursue" decision.**
+- Capacity (profit available by buying in trades below 0.95 in [t_doc + 2 min, t_doc + 24 h or market close], after fees) at or above **$100** is necessary for an ALIVE-signal but is **not sufficient for a "pursue" decision**: reaching it only yields a **provisional** ALIVE.
+- A **"pursue" decision** additionally requires, for the event, at least **$300 of depth within 2 cents of the pre-filing price**. Definitions fixed now: pre-filing price pA = p_dir(t_doc) (last trade at or before t_doc, in the resolved direction); depth = total notional (contracts x price, in dollars) of trades in the resolved direction printed at prices from pA up to pA + 0.02 during [t_doc, t_doc + 60 min], summed over the usable markets of the event. Trade prints are a proxy for resting order-book depth (we have no historical book), so a "pursue" decision is also provisional and must be re-checked against the live order book before any real use.
+- Neither condition changes the SPEED THESIS ALIVE / DEAD / MIXED / INCONCLUSIVE definitions; "pursue" is an additional output line ("PURSUE: yes / no") reported with the verdict, and is "no" whenever the verdict is not ALIVE.
+
+**A3. Operational.** The SEC watcher (`scripts/run_sec_watcher.py`, see README) records each filing's EDGAR acceptance time and our detection time. It was started on 2026-11-14 04:44 UTC; if it is not running when an event occurs, the event is still analysable from EDGAR and venue history, and the detection lag is reported as "not measured".
+
 
 ## Limitations
 
