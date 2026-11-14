@@ -1,4 +1,4 @@
-"""Structured JSON logging (one JSON object per line)."""
+"""Structured JSON logging (one JSON object per line), with secret redaction."""
 
 from __future__ import annotations
 
@@ -7,10 +7,16 @@ import logging
 from datetime import UTC, datetime
 from typing import Any
 
+from prooflag.redact import Redactor
+
 _STD = set(logging.LogRecord("", 0, "", 0, "", (), None).__dict__) | {"message", "asctime"}
 
 
 class JsonFormatter(logging.Formatter):
+    def __init__(self, redactor: Redactor | None = None) -> None:
+        super().__init__()
+        self._redactor = redactor or Redactor()
+
     def format(self, record: logging.LogRecord) -> str:
         out: dict[str, Any] = {
             "ts": datetime.fromtimestamp(record.created, UTC).isoformat(),
@@ -23,13 +29,14 @@ class JsonFormatter(logging.Formatter):
                 out[k] = v
         if record.exc_info:
             out["exc"] = self.formatException(record.exc_info)
+        out = self._redactor.scrub_obj(out)
         return json.dumps(out, default=str, ensure_ascii=False)
 
 
-def configure_logging(level: int = logging.INFO) -> None:
+def configure_logging(level: int = logging.INFO, redactor: Redactor | None = None) -> None:
     root = logging.getLogger()
     root.handlers = [h for h in root.handlers if not isinstance(h.formatter, JsonFormatter)]
     handler = logging.StreamHandler()
-    handler.setFormatter(JsonFormatter())
+    handler.setFormatter(JsonFormatter(redactor))
     root.addHandler(handler)
     root.setLevel(level)
