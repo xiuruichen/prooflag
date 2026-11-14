@@ -137,3 +137,44 @@ def test_strategy_fixture_compiles_to_ambiguous_deadline() -> None:
         [fake("qwen", t), fake("llama", out("ambiguous"))],
     )
     assert r.spec.deadline_applies_to == "ambiguous"
+
+
+def test_one_model_cannot_decide_the_deadline_basis() -> None:
+    r = compile_rule(TITLE, RULES, None, [fake("qwen", out("publication"))])
+    assert r.spec.deadline_applies_to == "ambiguous" and "insufficient_models" in r.failed_checks
+
+
+def test_two_providers_with_the_same_name_are_not_two_votes() -> None:
+    r = compile_rule(
+        TITLE, RULES, None, [fake("q", out("occurrence")), fake("q", out("occurrence"))]
+    )
+    assert r.spec.deadline_applies_to == "ambiguous"
+
+
+def test_trivial_spans_do_not_justify_a_vote_or_a_conflict_or_a_form() -> None:
+    t = out("occurrence")
+    t["source_spans"]["deadline_applies_to"] = "X"
+    t["headline_conflict"] = {"conflict": True, "note": "made up"}
+    t["source_spans"]["headline_conflict"] = "X"
+    t["acceptable_forms"] = ["X", "Bitcoin"]
+    r = compile_rule(TITLE, RULES, None, [fake("a", t), fake("b", t)])
+    assert r.spec.deadline_applies_to == "ambiguous"
+    assert r.spec.headline_conflict is False and r.spec.acceptable_forms == []
+
+
+def test_span_copied_from_the_title_does_not_justify_a_vote() -> None:
+    t = out("occurrence")
+    t["source_spans"]["deadline_applies_to"] = "Will X sell any Bitcoin"
+    r = compile_rule(TITLE, RULES, None, [fake("a", t), fake("b", t)])
+    assert r.spec.deadline_applies_to == "ambiguous"
+
+
+def test_provider_exception_is_recorded_not_raised_and_confidence_is_bounded() -> None:
+    def boom(s: str, u: str, sc: dict[str, Any]) -> str:
+        raise RuntimeError("down")
+
+    t = out("ambiguous")
+    t["confidence"] = -5
+    r = compile_rule(TITLE, RULES, None, [FakeProvider("bad", boom), fake("b", t)])
+    assert "provider_error:bad" in r.failed_checks["model_errors"] and not r.valid
+    assert 0.0 <= r.spec.confidence <= 1.0

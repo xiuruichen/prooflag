@@ -80,3 +80,31 @@ def test_any_substring_of_the_corpus_verifies(core: str, pre: str, post: str) ->
 @pytest.mark.parametrize("bad", ["", "   "])
 def test_blank_spans_never_verify(bad: str) -> None:
     assert not verify_span(bad, "anything")
+
+
+@pytest.mark.parametrize(
+    ("rules", "status"),
+    [
+        ("Opened January 1, 2026. Filed on or before 11:59 PM ET on May 31, 2026.", "conflicting"),
+        ("by May 31, 2026. Price check at 9 AM ET daily; deadline 11:59 PM ET.", "conflicting"),
+        ("by 11:59 PM ET on May 31, 2026 or 11:59 PM UTC on May 31, 2026", "conflicting"),
+        ("by 2:30 AM ET on March 8, 2026", "dst_ambiguous"),
+        ("by 1:30 AM ET on November 1, 2026", "dst_ambiguous"),
+        ("by 11:59 PM EST on May 31, 2026", "tz_season_mismatch"),
+        ("by 11:59 PM ET on February 30, 2026", "invalid"),
+        ("by 11:75 PM ET on May 31, 2026", "date_only"),
+        ("by 13 PM ET on May 31, 2026", "date_only"),
+        ("X files 2 amendments by May 31, 2026 11:59 PM ET", "ok"),
+        ("filed on or before Dec 31, 2026 11:59 PM ET", "ok"),
+    ],
+)
+def test_deadline_review_cases(rules: str, status: str) -> None:
+    d = extract_deadline("t", rules)
+    assert d.status == status
+    assert (d.utc is not None) == (status == "ok")
+
+
+def test_abbreviated_month_parses_and_10ka_form() -> None:
+    d = extract_deadline("t", "filed on or before Dec 31, 2026 11:59 PM ET")
+    assert d.utc == datetime(2027, 1, 1, 4, 59, tzinfo=UTC)
+    assert extract_forms("Form 10-K/A filed") == ["10-K/A"]

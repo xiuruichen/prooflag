@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, ValidationError
 from prooflag.compiler.extract import (
     extract_deadline,
     extract_forms,
+    normalize_text,
     publication_phrase,
     verify_span,
 )
@@ -148,6 +149,11 @@ class CompileResult:
     prompt_sha: str = PROMPT_SHA
 
 
+def _span_ok(span: str, text: str) -> bool:
+    """A usable justification: verbatim in ``text`` and long enough to carry meaning."""
+    return len(normalize_text(span)) >= 10 and verify_span(span, text)
+
+
 def compile_rule(
     title: str,
     rules: str,
@@ -168,8 +174,14 @@ def compile_rule(
     result_models: list[tuple[str, str]] = []
     raw: dict[str, str] = {}
 
+    body = chr(10).join(x for x in (rules, secondary) if x)
     for p in providers:
-        res = p.generate(SYSTEM_PROMPT, user, LLM_SCHEMA, seed=seed)
+        try:
+            res = p.generate(SYSTEM_PROMPT, user, LLM_SCHEMA, seed=seed)
+        except Exception:
+            model_errors.append(f"provider_error:{p.model_name}")
+            votes[p.model_name + "#err"] = "ambiguous"
+            continue
         result_models.append((res.model_name, res.model_sha256))
         raw[p.model_name] = res.text
         try:
@@ -181,7 +193,7 @@ def compile_rule(
         outputs.append(o)
         vote: str = o.deadline_applies_to
         sp = o.source_spans.deadline_applies_to
-        if vote != "ambiguous" and not (sp and verify_span(sp, corpus)):
+        if vote != "ambiguous" and not (sp and _span_ok(sp, body)):
             span_failures.append("span_unverified:deadline_applies_to")
             vote = "ambiguous"
         votes[p.model_name] = vote
@@ -200,8 +212,9 @@ def compile_rule(
             **votes,
             **({"deterministic": "publication"} if det else {}),
         }
-    if not providers:
+    if len({p.model_name for p in providers}) < 2:
         applies = "ambiguous"
+        failed["insufficient_models"] = len({p.model_name for p in providers})
     if dl.status != "ok":
         failed["deadline"] = dl.status
         applies = "ambiguous"
@@ -215,13 +228,13 @@ def compile_rule(
     conflict, note = False, None
     if first and first.headline_conflict.conflict:
         hs = first.source_spans.headline_conflict
-        if hs and verify_span(hs, corpus):
+        if hs and _span_ok(hs, corpus):
             conflict, note = True, first.headline_conflict.note
         else:
             span_failures.append("span_unverified:headline_conflict")
     forms = extract_forms(corpus)
     for f in first.acceptable_forms if first else []:
-        if f not in forms and verify_span(f, corpus):
+        if f not in forms and extract_forms(f) == [f.removeprefix("Form ")]:
             forms.append(f)
     if span_failures:
         failed["span_failures"] = sorted(set(span_failures))
@@ -243,7 +256,7 @@ def compile_rule(
         headline_conflict=conflict,
         headline_conflict_note=note,
         source_spans=spans,
-        confidence=min(first.confidence, 1.0) if first and not span_failures else 0.0,
+        confidence=max(0.0, min(first.confidence, 1.0)) if first and not span_failures else 0.0,
     )
     return CompileResult(spec, not span_failures and not model_errors, failed, result_models, raw)
 
