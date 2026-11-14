@@ -61,7 +61,7 @@ def up(repo: MarketRepo, m: RawMarket, **kw):  # type: ignore[no-untyped-def]
         tags,
         assign_cluster(m),
         meaningful=kw.pop("meaningful", False),
-        watch_candidate=kw.pop("watch", True),
+        watched=kw.pop("watch", True),
     )
 
 
@@ -178,11 +178,15 @@ def test_revert_a_b_a_is_visible_in_the_change_log(env) -> None:  # type: ignore
     assert one(db, "select current_rules_sha from markets")[0] == a.rules_sha
 
 
-def test_watched_is_sticky_when_volume_dips(env) -> None:  # type: ignore[no-untyped-def]
+def test_watched_follows_the_flag_not_volume_and_none_keeps_it(env) -> None:  # type: ignore[no-untyped-def]
     db, repo, *_ = env
     up(repo, kalshi_market(), watch=True, meaningful=True)
-    res = up(repo, kalshi_market(vol24_usd_est=0.0), watch=False, meaningful=False)
-    assert res.watched and one(db, "select watched, meaningful from markets")[:] == (1, 0)
+    up(repo, kalshi_market(vol24_usd_est=0.0), watch=True, meaningful=False)  # volume dipped
+    assert one(db, "select watched, meaningful from markets")[:] == (1, 0)
+    repo.upsert(kalshi_market(), None, None, meaningful=None, watched=None)  # lookup: keep
+    assert one(db, "select watched from markets")[0] == 1
+    up(repo, kalshi_market(), watch=False)  # allow-list entry revoked
+    assert one(db, "select watched from markets")[0] == 0
 
 
 def test_lookup_without_event_context_does_not_erase_known_fields(env) -> None:  # type: ignore[no-untyped-def]
@@ -306,7 +310,7 @@ def test_lookup_update_keeps_tags_and_cluster_but_still_detects_rule_edits(env) 
         result="yes",
         raw={"lookup": True},
     )
-    res = repo.upsert(lookup, None, None, meaningful=None, watch_candidate=False)
+    res = repo.upsert(lookup, None, None, meaningful=None, watched=None)
     assert res.rules_changed and res.watched
     assert {r[0] for r in db.conn.execute("select tag from market_tags")} == tags_before
     row = one(db, "select cluster_id, status, result from markets")

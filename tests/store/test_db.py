@@ -28,6 +28,8 @@ EXPECTED_TABLES = {
     "label_consensus",
     "market_rule_changes",
     "market_tokens",
+    "watch_allowlist",
+    "watch_candidates",
 }
 
 

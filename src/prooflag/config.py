@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     # "Meaningful" = estimated 24h dollar volume (Kalshi: contracts x last price). OI alone and
     # Polymarket liquidity never count.
     min_vol24_usd: float = Field(default=1000.0, ge=0)
+    # Curated watch allow-list seed (append-only table is the source of truth once loaded).
+    allowlist_seed_path: Path = (
+        Path(__file__).resolve().parents[2] / "config" / "watch_allowlist_seed.json"
+    )
     # EDGAR window (America/New_York, weekdays) drives the price-snapshot cadence.
     edgar_window_start: str = "06:00"
     edgar_window_end: str = "22:00"

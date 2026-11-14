@@ -18,6 +18,7 @@ APPEND_ONLY = [
     "labels_raw",
     "label_consensus",
     "market_rule_changes",
+    "watch_allowlist",
 ]
 
 
@@ -92,6 +93,11 @@ def _seed(db: Db) -> dict[str, tuple[str, tuple[object, ...]]]:
         "market_rule_changes": (
             "insert into market_rule_changes(venue, market_id, from_sha, to_sha, seen_at)"
             " values ('kalshi','m1','a','b',?)",
+            (NOW,),
+        ),
+        "watch_allowlist": (
+            "insert into watch_allowlist(action, venue, scope, key, reason, reviewer, added_at)"
+            " values ('allow','kalshi','market','m1','r','tester',?)",
             (NOW,),
         ),
         "label_consensus": (

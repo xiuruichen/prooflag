@@ -59,10 +59,11 @@ class MarketRepo:
         cluster: Cluster | None,
         *,
         meaningful: bool | None,
-        watch_candidate: bool,
+        watched: bool | None,
     ) -> UpsertResult:
         """Insert or update. ``tags``/``cluster`` of None mean "keep what is stored" (used by
-        lookups that carry no event context, e.g. snapshot refreshes)."""
+        lookups that carry no event context, e.g. snapshot refreshes). ``watched`` is decided by
+        the allow-list (not by volume); None keeps the stored value."""
         c = self.db.conn
         now = self.clock.now()
         sha = rules_sha(m.title, m.rules_primary, m.rules_secondary)
@@ -105,7 +106,7 @@ class MarketRepo:
             "   markets.open_interest_contracts),"
             " liquidity_usd=coalesce(excluded.liquidity_usd, markets.liquidity_usd),"
             " meaningful=case when ? is null then markets.meaningful else excluded.meaningful end,"
-            " watched=max(markets.watched, excluded.watched),"
+            " watched=case when ? is null then markets.watched else excluded.watched end,"
             " current_rules_sha=excluded.current_rules_sha,"
             " result=coalesce(excluded.result, markets.result),"
             " settled_at=coalesce(markets.settled_at, excluded.settled_at),"
@@ -130,12 +131,13 @@ class MarketRepo:
                 m.open_interest_contracts,
                 m.liquidity_usd,
                 int(bool(meaningful)),
-                int(watch_candidate),
+                int(bool(watched)),
                 sha,
                 m.result,
                 now.isoformat() if m.status == "settled" else None,
                 m.yes_label,
                 None if meaningful is None else int(meaningful),
+                None if watched is None else int(watched),
             ),
         )
         c.execute(
@@ -212,6 +214,27 @@ class MarketRepo:
             ).fetchone()[0]
         )
         return UpsertResult(is_new, rules_changed, sha, previous_sha, watched)
+
+    # -- candidate review queue ----------------------------------------------------------------
+    def queue_candidate(self, m: RawMarket, tags: list[Tag]) -> None:
+        """Regex matches wait here for review; they are never auto-watched."""
+        now = self.clock.now().isoformat()
+        names = ",".join(sorted(t.tag for t in tags))
+        self.db.conn.execute(
+            "insert into watch_candidates(venue, market_id, title, tags, vol24_usd_est,"
+            " first_seen_at, last_seen_at) values (?,?,?,?,?,?,?)"
+            " on conflict(venue, market_id) do update set tags=excluded.tags,"
+            " vol24_usd_est=coalesce(excluded.vol24_usd_est, watch_candidates.vol24_usd_est),"
+            " last_seen_at=excluded.last_seen_at, title=excluded.title",
+            (m.venue, m.market_id, m.title, names, m.vol24_usd_est, now, now),
+        )
+
+    def resolve_candidate(self, venue: str, market_id: str, status: str) -> None:
+        self.db.conn.execute(
+            "update watch_candidates set status=? where venue=? and market_id=?"
+            " and status='pending'",
+            (status, venue, market_id),
+        )
 
     def watch_targets(self) -> list[WatchTarget]:
         marks = ",".join("?" * len(LIVE_STATUSES))

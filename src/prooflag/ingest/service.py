@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from typing import Any, Protocol
 
 from prooflag.clock import Clock
+from prooflag.ingest.allowlist import AllowList, AllowlistRepo
 from prooflag.ingest.cadence import Cadence
 from prooflag.ingest.models import PricePoint, RawMarket
 from prooflag.ingest.repo import MarketRepo
@@ -19,7 +20,7 @@ from prooflag.ingest.tagging import (
     WEEKLY_EO_SERIES,
     assign_cluster,
     is_meaningful,
-    is_watch_candidate,
+    is_review_candidate,
     tag_market,
 )
 from prooflag.store.db import Db
@@ -53,6 +54,7 @@ class CatalogStats:
     new: int = 0
     rules_changed: int = 0
     watched: int = 0
+    queued: int = 0
     errors: int = 0
 
 
@@ -96,6 +98,7 @@ class IngestService:
         min_vol24_usd: float,
         batch_size: int = 500,
         catalog_interval: timedelta = timedelta(minutes=60),
+        allowlist: AllowlistRepo | None = None,
     ) -> None:
         self.db = db
         self.repo = repo
@@ -105,6 +108,7 @@ class IngestService:
         self.min_usd = min_vol24_usd
         self.batch_size = batch_size
         self.catalog_interval = catalog_interval
+        self.allowlist = allowlist
         self._series_done: set[str] = set()
 
     # -- helpers -----------------------------------------------------------------------------
@@ -162,9 +166,13 @@ class IngestService:
         else:
             c.execute("release sp")
 
+    def _allow(self) -> AllowList:
+        return self.allowlist.snapshot() if self.allowlist else AllowList([])
+
     def _ingest(
         self, markets: Iterator[RawMarket], stats: CatalogStats, source: Any = None
     ) -> None:
+        allow = self._allow()  # one snapshot per pass
         batch: list[RawMarket] = []
 
         def flush() -> None:
@@ -175,13 +183,19 @@ class IngestService:
                     try:
                         with self._savepoint():
                             tags = tag_market(m)
+                            allowed = allow.match(m) is not None
                             res = self.repo.upsert(
                                 m,
                                 tags,
                                 assign_cluster(m),
                                 meaningful=is_meaningful(m, self.min_usd),
-                                watch_candidate=is_watch_candidate(tags, m, self.min_usd),
+                                watched=allowed,
                             )
+                            if allowed:
+                                self.repo.resolve_candidate(m.venue, m.market_id, "accepted")
+                            elif is_review_candidate(tags, m, self.min_usd):
+                                self.repo.queue_candidate(m, tags)
+                                stats.queued += 1
                     except Exception:
                         stats.errors += 1
                         log.exception("upsert failed", extra={"market": m.market_id})
@@ -211,6 +225,24 @@ class IngestService:
             self._log_poll(f"catalog:{venue}", started, False, stats.seen, str(e))
             raise
         self._log_poll(f"catalog:{venue}", started, True, stats.seen)
+        return stats
+
+    def ingest_allowlisted(self, venue: str) -> CatalogStats:
+        """Allow-listed markets that the open catalog does not return (closed, settled, or past
+        the open listing) are fetched by id so they are stored, watched and settle-tracked."""
+        stats = CatalogStats()
+        if self.allowlist is None:
+            return stats
+        ids = self._allow().market_ids(venue)
+        have = {
+            r[0]
+            for r in self.db.conn.execute("select market_id from markets where venue=?", (venue,))
+        }
+        missing = [i for i in ids if i not in have]
+        if not missing:
+            return stats
+        source = self.sources[venue]
+        self._ingest(iter(source.fetch_markets(missing)), stats, source)
         return stats
 
     def ingest_series(self, venue: str, series_ticker: str) -> CatalogStats:
@@ -246,7 +278,7 @@ class IngestService:
             stats.missing += len([i for i in ids if i not in got])
             with self.db.transaction():
                 for raw in raws:
-                    res = self.repo.upsert(raw, None, None, meaningful=None, watch_candidate=False)
+                    res = self.repo.upsert(raw, None, None, meaningful=None, watched=None)
                     stats.rules_changed += int(res.rules_changed)
                     stats.snapshots += int(self.repo.add_snapshot(raw, now))
                     stats.settled += int(raw.status == "settled")
@@ -321,6 +353,10 @@ class IngestService:
             except Exception:
                 log.exception("catalog pass failed", extra={"venue": venue})
                 continue
+            try:
+                self.ingest_allowlisted(venue)
+            except Exception:
+                log.exception("allow-list lookup failed", extra={"venue": venue})
             if venue == "kalshi":
                 for series in PRIMARY_SERIES:
                     if series not in self._series_done:

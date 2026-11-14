@@ -5,11 +5,13 @@ from __future__ import annotations
 import time
 from collections.abc import Callable
 from datetime import timedelta
+from pathlib import Path
 
 import httpx
 
 from prooflag.clock import Clock
 from prooflag.config import Settings
+from prooflag.ingest.allowlist import AllowlistRepo
 from prooflag.ingest.cadence import Cadence
 from prooflag.ingest.http import VenueClient
 from prooflag.ingest.kalshi import KalshiSource
@@ -27,6 +29,7 @@ def build_service(
     *,
     transport: httpx.BaseTransport | None = None,
     sleep: Callable[[float], None] = time.sleep,
+    seed_path: Path | None = None,
 ) -> IngestService:
     # One client (one shared rate limiter) for both venues, with the GENERIC user agent: the SEC
     # contact email is never sent to Kalshi or Polymarket.
@@ -41,6 +44,10 @@ def build_service(
         "polymarket": PolymarketSource(client, settings.gamma_base, settings.clob_base, clock.now),
     }
     repo = MarketRepo(db, Locker(settings.locker_dir, db), clock)
+    allowlist = AllowlistRepo(db, clock)
+    seed = seed_path if seed_path is not None else settings.allowlist_seed_path
+    if seed.exists():
+        allowlist.seed_from_file(seed)  # idempotent: only entries not already active are added
     return IngestService(
         db,
         repo,
@@ -54,4 +61,5 @@ def build_service(
         ),
         min_vol24_usd=settings.min_vol24_usd,
         catalog_interval=timedelta(minutes=settings.catalog_interval_minutes),
+        allowlist=allowlist,
     )

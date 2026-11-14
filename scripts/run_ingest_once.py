@@ -31,6 +31,7 @@ def main() -> None:
     if not args.skip_catalog:
         for venue in ("kalshi", "polymarket"):
             print(venue, svc.catalog_pass(venue), f"{time.time() - t0:.0f}s", flush=True)
+            print(venue, "allow-listed lookups", svc.ingest_allowlisted(venue), flush=True)
         for series in ("KXEOWEEK", "KXEOTRUMPTERM"):
             print(series, svc.ingest_series("kalshi", series), flush=True)
     print("snapshot", svc.snapshot_pass(), f"{time.time() - t0:.0f}s", flush=True)

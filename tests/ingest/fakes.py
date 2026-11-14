@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from prooflag.clock import FixedClock
+from prooflag.ingest.allowlist import AllowEntry, AllowlistRepo
 from prooflag.ingest.cadence import Cadence
 from prooflag.ingest.models import PricePoint, RawMarket
 from prooflag.ingest.repo import MarketRepo
@@ -99,6 +100,7 @@ class Env:
         self.clock = FixedClock(T0)
         self.repo = MarketRepo(self.db, Locker(tmp_path / "lk", self.db), self.clock)
         self.sources = {s.venue: s for s in sources}
+        self.allowlist = AllowlistRepo(self.db, self.clock)
         self.svc = IngestService(
             self.db,
             self.repo,
@@ -107,7 +109,20 @@ class Env:
             cadence=Cadence(),
             min_vol24_usd=1000.0,
             batch_size=2,
+            allowlist=self.allowlist,
         )
+
+    def allow_catalog(self) -> None:
+        """Allow-list every market the fake sources serve (most tests are about what happens to
+        watched markets, not about who gets watched)."""
+        for src in self.sources.values():
+            for m in src.catalog:
+                self.allow(src.venue, m.market_id)
+            for mid in src.lookups:
+                self.allow(src.venue, mid)
+
+    def allow(self, venue: str, key: str, scope: str = "market") -> None:
+        self.allowlist.allow(AllowEntry(venue, scope, key, "test fixture", "tests"))
 
     def one(self, sql: str, *a: Any) -> Any:
         return self.db.conn.execute(sql, a).fetchone()

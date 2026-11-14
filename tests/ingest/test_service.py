@@ -5,27 +5,6 @@ from datetime import UTC, datetime, timedelta
 from fakes import T0, FakeSource, mk
 
 
-def test_catalog_pass_stores_tags_clusters_and_watches_in_batches(make_env) -> None:  # type: ignore[no-untyped-def]
-    ms = [
-        mk("A", vol24_usd_est=5000.0),
-        mk("B", vol24_usd_est=10.0),  # tagged (Federal Register) but not meaningful
-        mk("C", vol24_usd_est=5000.0, rules_primary="nothing relevant"),  # untagged
-        mk("EO-1", series_ticker="KXEOWEEK", event_id="KXEOWEEK-26NOV14", vol24_usd_est=0.0),
-        mk("D", vol24_usd_est=3000.0),
-    ]
-    env = make_env(FakeSource("kalshi", ms))
-    st = env.svc.catalog_pass("kalshi")
-    assert (st.seen, st.new, st.rules_changed, st.errors) == (5, 5, 0, 0)
-    rows = {r["market_id"]: r for r in env.db.conn.execute("select * from markets")}
-    assert rows["A"]["watched"] == 1 and rows["A"]["meaningful"] == 1
-    assert rows["B"]["watched"] == 0 and rows["B"]["meaningful"] == 0
-    assert rows["C"]["watched"] == 0
-    assert rows["EO-1"]["watched"] == 1 and rows["EO-1"]["meaningful"] == 0  # primary eval source
-    assert rows["EO-1"]["cluster_id"] == "weekly_eo:2026-11-14"
-    assert st.watched == 3
-    assert env.one("select count(*) from poll_log where source='catalog:kalshi' and ok=1")[0] == 1
-
-
 def test_catalog_second_pass_reports_rule_edits(make_env) -> None:  # type: ignore[no-untyped-def]
     src = FakeSource("kalshi", [mk("A")])
     env = make_env(src)
@@ -48,6 +27,7 @@ def test_one_bad_market_does_not_abort_the_pass(make_env) -> None:  # type: igno
 def test_snapshot_pass_only_watched_live_markets_with_bid_ask_last(make_env) -> None:  # type: ignore[no-untyped-def]
     src = FakeSource("kalshi", [mk("A"), mk("B", vol24_usd_est=1.0)])
     env = make_env(src)
+    env.allow("kalshi", "A")
     env.svc.catalog_pass("kalshi")
     st = env.svc.snapshot_pass()
     assert src.lookup_calls == [["A"]]  # B is not watched
@@ -60,6 +40,7 @@ def test_snapshot_pass_only_watched_live_markets_with_bid_ask_last(make_env) -> 
 def test_watched_market_stays_in_snapshots_after_volume_dips(make_env) -> None:  # type: ignore[no-untyped-def]
     src = FakeSource("kalshi", [mk("A")])
     env = make_env(src)
+    env.allow_catalog()
     env.svc.catalog_pass("kalshi")
     src.catalog = [mk("A", vol24_usd_est=0.0)]
     env.svc.catalog_pass("kalshi")
@@ -80,6 +61,7 @@ def test_past_end_polymarket_market_is_still_snapshotted_until_settled(make_env)
     )
     src = FakeSource("polymarket", [pm])
     env = make_env(src)
+    env.allow_catalog()
     env.svc.catalog_pass("polymarket")
     src.lookups["0xP"] = mk(
         "0xP", venue="polymarket", series_ticker=None, status="past_end", vol24_usd_est=0.0
@@ -111,6 +93,7 @@ def test_past_end_polymarket_market_is_still_snapshotted_until_settled(make_env)
 def test_missing_from_lookup_is_reported_and_left_unchanged(make_env) -> None:  # type: ignore[no-untyped-def]
     src = FakeSource("kalshi", [mk("A"), mk("B")])
     env = make_env(src)
+    env.allow_catalog()
     env.svc.catalog_pass("kalshi")
     del src.lookups["B"]
     st = env.svc.snapshot_pass()
@@ -124,6 +107,7 @@ def test_venue_outage_is_logged_and_other_venues_continue(make_env) -> None:  # 
         "polymarket", [mk("0xP", venue="polymarket", series_ticker=None, token_ids={"yes": "TY"})]
     )
     env = make_env(k, p)
+    env.allow_catalog()
     env.svc.catalog_pass("kalshi")
     env.svc.catalog_pass("polymarket")
     k.fail_lookup = True
@@ -136,6 +120,7 @@ def test_venue_outage_is_logged_and_other_venues_continue(make_env) -> None:  # 
 def test_rule_edit_found_during_snapshot_refresh(make_env) -> None:  # type: ignore[no-untyped-def]
     src = FakeSource("kalshi", [mk("A")])
     env = make_env(src)
+    env.allow_catalog()
     env.svc.catalog_pass("kalshi")
     src.lookups["A"] = mk("A", rules_primary="Silently edited.", series_ticker=None)
     st = env.svc.snapshot_pass()
@@ -157,6 +142,7 @@ def test_ingest_primary_series_covers_open_and_settled_weeks(make_env) -> None: 
     ]
     src = FakeSource("kalshi", weeks)
     env = make_env(src)
+    env.allow("kalshi", "KXEOWEEK", scope="series")
     st = env.svc.ingest_series("kalshi", "KXEOWEEK")
     assert st.new == 2
     assert {s for s, _ in src.series_calls} == {"open", "closed", "settled"}
@@ -180,6 +166,7 @@ def test_backfill_runs_once_per_watched_market_and_uses_yes_token(make_env) -> N
         [mk("0xP", venue="polymarket", series_ticker=None, token_ids={"yes": "TY", "no": "TN"})],
     )
     env = make_env(k, p)
+    env.allow_catalog()
     env.svc.catalog_pass("kalshi")
     env.svc.catalog_pass("polymarket")
     st = env.svc.backfill_pass()
@@ -199,6 +186,7 @@ def test_backfill_runs_once_per_watched_market_and_uses_yes_token(make_env) -> N
 def test_backfill_respects_max_markets_per_pass(make_env) -> None:  # type: ignore[no-untyped-def]
     src = FakeSource("kalshi", [mk(f"M{i}", vol24_usd_est=5000.0) for i in range(5)])
     env = make_env(src)
+    env.allow_catalog()
     env.svc.catalog_pass("kalshi")
     assert env.svc.backfill_pass(max_markets=2).markets == 2
     assert env.svc.backfill_pass(max_markets=10).markets == 3
@@ -220,6 +208,7 @@ def test_backfill_of_settled_market_stops_at_close_time(make_env) -> None:  # ty
         ],
     )
     env = make_env(src)
+    env.allow("kalshi", "KXEOWEEK", scope="series")
     env.svc.ingest_series("kalshi", "KXEOWEEK")
     env.svc.backfill_pass()
     assert src.history_calls[0]["end"] == closed
@@ -228,6 +217,7 @@ def test_backfill_of_settled_market_stops_at_close_time(make_env) -> None:  # ty
 def test_tick_runs_snapshots_by_cadence_and_catalog_by_interval(make_env) -> None:  # type: ignore[no-untyped-def]
     src = FakeSource("kalshi", [mk("A")])
     env = make_env(src)
+    env.allow_catalog()
     r1 = env.svc.run_due()
     assert r1.catalog_ran and r1.snapshot_ran
     assert not env.svc.run_due().snapshot_ran  # nothing due immediately after

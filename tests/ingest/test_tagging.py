@@ -12,7 +12,7 @@ from prooflag.ingest.polymarket import PolymarketSource
 from prooflag.ingest.tagging import (
     assign_cluster,
     is_meaningful,
-    is_watch_candidate,
+    is_review_candidate,
     tag_market,
 )
 
@@ -72,7 +72,7 @@ def test_fomc_markets_are_tagged_and_never_watch_candidates() -> None:
     assert any(m.venue == "kalshi" for m in fomc) and any(m.venue == "polymarket" for m in fomc)
     for m in fomc:
         m.vol24_usd_est = 1e9
-        assert not is_watch_candidate(tag_market(m), m, min_usd=1000)
+        assert not is_review_candidate(tag_market(m), m, min_usd=1000)
 
 
 def test_ipo_family_cluster_spans_both_venues_and_both_issuers() -> None:
@@ -140,7 +140,7 @@ def test_meaningful_filter(venue, vol_usd, oi, liq, expected) -> None:  # type: 
     assert is_meaningful(m, 1000.0) is expected
 
 
-def test_watch_candidate_rules() -> None:
+def test_review_candidate_rules() -> None:
     sec = RawMarket(
         venue="polymarket",
         market_id="a",
@@ -148,9 +148,17 @@ def test_watch_candidate_rules() -> None:
         rules_primary="as filed with the SEC in Form S-1",
         vol24_usd_est=50.0,
     )
-    assert not is_watch_candidate(tag_market(sec), sec, 1000.0)  # tagged but not meaningful
+    assert not is_review_candidate(tag_market(sec), sec, 1000.0)  # tagged but not meaningful
     sec.vol24_usd_est = 5000.0
-    assert is_watch_candidate(tag_market(sec), sec, 1000.0)
+    assert is_review_candidate(tag_market(sec), sec, 1000.0)
+    press = RawMarket(
+        venue="polymarket",
+        market_id="c",
+        title="t",
+        rules_primary="see the official announcement",
+        vol24_usd_est=9e6,
+    )
+    assert not is_review_candidate(tag_market(press), press, 1000.0)  # press_release alone: no
     eo = RawMarket(
         venue="kalshi",
         market_id="b",
@@ -160,12 +168,5 @@ def test_watch_candidate_rules() -> None:
         event_id="KXEOWEEK-26NOV14",
         vol24_usd_est=0.0,
     )
-    assert is_watch_candidate(tag_market(eo), eo, 1000.0)  # primary eval: always watched
-    press = RawMarket(
-        venue="polymarket",
-        market_id="c",
-        title="t",
-        rules_primary="see the official announcement",
-        vol24_usd_est=9e6,
-    )
-    assert not is_watch_candidate(tag_market(press), press, 1000.0)  # press_release alone: no
+    # Weekly EO is covered by the allow-list series entry, not by the regex review queue.
+    assert not is_review_candidate(tag_market(eo), eo, 1000.0)

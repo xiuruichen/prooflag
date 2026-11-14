@@ -128,6 +128,7 @@ def test_failing_venue_backs_off_and_healthy_venue_keeps_its_own_schedule(make_e
         "polymarket", [mk("0xP", venue="polymarket", series_ticker=None, token_ids={"yes": "TY"})]
     )
     env = make_env(k, p)
+    env.allow_catalog()
     for _ in range(40):  # 40 one-minute ticks
         env.svc.run_due()
         env.clock.advance(timedelta(minutes=1))
@@ -146,6 +147,7 @@ def test_snapshot_failure_of_one_venue_does_not_repeat_the_other(make_env) -> No
         "polymarket", [mk("0xP", venue="polymarket", series_ticker=None, token_ids={"yes": "TY"})]
     )
     env = make_env(k, p)
+    env.allow_catalog()
     env.svc.run_due()
     k.fail_lookup = True
     base = len(p.lookup_calls)

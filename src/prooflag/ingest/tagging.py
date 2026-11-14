@@ -113,8 +113,10 @@ def is_meaningful(m: RawMarket, min_usd: float) -> bool:
     return m.vol24_usd_est is not None and m.vol24_usd_est >= min_usd
 
 
-def is_watch_candidate(tags: list[Tag], m: RawMarket, min_usd: float) -> bool:
+def is_review_candidate(tags: list[Tag], m: RawMarket, min_usd: float) -> bool:
+    """Regex-matched, busy, non-FOMC markets worth a human look. They are queued for review and
+    are never watched until an allow-list entry is added."""
     names = {t.tag for t in tags}
     if "fomc" in names or not (names & DOC_FAMILY_TAGS):
         return False
-    return "primary_eval" in names or is_meaningful(m, min_usd)
+    return is_meaningful(m, min_usd)

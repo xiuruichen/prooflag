@@ -1,0 +1,677 @@
+{
+ "version": 1,
+ "entries": [
+  {
+   "venue": "kalshi",
+   "scope": "series",
+   "key": "KXEOWEEK",
+   "reason": "primary eval source: weekly executive orders settle on the Federal Register",
+   "reviewer": "user decision 2026-11-14"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x3733a1b647e7364095736ab0966465d896a84cf3b6bc1695ca1f26c3239b3868",
+   "reason": "Strategy 'sells any BTC by May 31, 2026': required negative-test fixture (8-K accepted after the deadline; resolved No)",
+   "reviewer": "user decision 2026-11-14"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXNCAABACKPAYWOMEN-29-29DEC31",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will women get a bigger share of NCAA settlement back pay?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "AMAZONFTC-29DEC31",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Courts consider Amazon a monopoly?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "APPLEUS-29DEC31",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Courts consider Apple a monopoly?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXEOTRUMPTERM-29JAN20-300",
+   "reason": "hand-reviewed DOC_SETTLED strict (federal_register): How many executive orders will Trump sign in his second term?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXEOTRUMPTERM-29JAN20-324",
+   "reason": "hand-reviewed DOC_SETTLED strict (federal_register): How many executive orders will Trump sign in his second term?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXEOTRUMPTERM-29JAN20-374",
+   "reason": "hand-reviewed DOC_SETTLED strict (federal_register): How many executive orders will Trump sign in his second term?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXEOTRUMPTERM-29JAN20-424",
+   "reason": "hand-reviewed DOC_SETTLED strict (federal_register): How many executive orders will Trump sign in his second term?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXEOTRUMPTERM-29JAN20-474",
+   "reason": "hand-reviewed DOC_SETTLED strict (federal_register): How many executive orders will Trump sign in his second term?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXEOTRUMPTERM-29JAN20-524",
+   "reason": "hand-reviewed DOC_SETTLED strict (federal_register): How many executive orders will Trump sign in his second term?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXEOTRUMPTERM-29JAN20-574",
+   "reason": "hand-reviewed DOC_SETTLED strict (federal_register): How many executive orders will Trump sign in his second term?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXEOTRUMPTERM-29JAN20-624",
+   "reason": "hand-reviewed DOC_SETTLED strict (federal_register): How many executive orders will Trump sign in his second term?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXEOTRUMPTERM-29JAN20-674",
+   "reason": "hand-reviewed DOC_SETTLED strict (federal_register): How many executive orders will Trump sign in his second term?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXEOTRUMPTERM-29JAN20-724",
+   "reason": "hand-reviewed DOC_SETTLED strict (federal_register): How many executive orders will Trump sign in his second term?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXEOTRUMPTERM-29JAN20-775",
+   "reason": "hand-reviewed DOC_SETTLED strict (federal_register): How many executive orders will Trump sign in his second term?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXEOTRUMPTERM-29JAN20-800",
+   "reason": "hand-reviewed DOC_SETTLED strict (federal_register): How many executive orders will Trump sign in his second term?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXSCOTUSCERT3RD-29JAN-3RD",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will the Supreme Court hear a 3rd Amendment case before Trump's term ends?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXNCAABACKPAY-28-27DEC31",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): When will NCAA settlement back-pay payments begin?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXNCAABACKPAY-28-28DEC31",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): When will NCAA settlement back-pay payments begin?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXJUDGMENT-NPS29",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will SCOTUS end the White House ballroom injunction?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXOBERGEFELL-29",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will the Supreme Court overturn gay marriage?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXHARVARDFUNDAPPEAL-HHS29",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): First Circuit fully affirms Harvard funding ruling?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXSUPERVOTEDARIO-29SEP26-YES",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): Will Dario Amodei hold super-voting Anthropic shares at IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXSUPERVOTEALTMAN-29SEP26-YES",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): Will Sam Altman hold super-voting OpenAI shares at IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXOPENAILEADLEFT-28JAN01B-GSX",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): Which bank will lead OpenAI's IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXOPENAILEADLEFT-28JAN01B-MSX",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): Which bank will lead OpenAI's IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXOPENAILEADLEFT-28JAN01B-JPMX",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): Which bank will lead OpenAI's IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXOPENAILEADLEFT-28JAN01B-BOAX",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): Which bank will lead OpenAI's IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXOPENAILEADLEFT-28JAN01B-CITIX",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): Which bank will lead OpenAI's IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXOPENAILEADLEFT-28JAN01B-NLOX",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): Which bank will lead OpenAI's IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXMACRONOWENSLONG-28",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will Brigitte Macron win her defamation lawsuit against Candace Owens?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXANTHROPICLEADLEFT-28JAN01B-GSX",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): Which bank will lead Anthropic's IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXANTHROPICLEADLEFT-28JAN01B-MSX",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): Which bank will lead Anthropic's IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXANTHROPICLEADLEFT-28JAN01B-JPMX",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): Which bank will lead Anthropic's IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXANTHROPICLEADLEFT-28JAN01B-BOAX",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): Which bank will lead Anthropic's IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXANTHROPICLEADLEFT-28JAN01B-CITIX",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): Which bank will lead Anthropic's IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXANTHROPICLEADLEFT-28JAN01B-NLOX",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): Which bank will lead Anthropic's IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXCOMEYNDIDISMISS-27-27JAN01",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will James Comey’s national defense information case be dismissed?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXCOMEYNDIDISMISS-27-27JUL01",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will James Comey’s national defense information case be dismissed?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXARCRYPTO-JLLC27",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will Arkansas's crypto mining ownership ban survive appeal?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXNVIDIAGROQFINE-26SEP-27JAN01",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will the DOJ fine Nvidia over the Groq deal in 2026?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXTRUMPTARIFFHEAR-27JAN-X",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will the Supreme Court hear a case on Trump's tariffs in 2026?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXSECQUARTERLY-26MAR-27JAN01",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): Will the SEC eliminate the quarterly reporting requirement?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXSECQUARTERLY-26MAR-27APR01",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): Will the SEC eliminate the quarterly reporting requirement?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXSCOTUSCERTFLAG-27JAN-FBB",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will the SCOTUS hear a case about flag burning before 2027?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXSCOTUSCERT-27JAN-RNC",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): What cases will the Supreme Court agree to hear in 2026?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXSCOTUSCERT-27JAN-BUE",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): What cases will the Supreme Court agree to hear in 2026?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXSCOTUSCERT-27JAN-DUN",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): What cases will the Supreme Court agree to hear in 2026?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXSCOTUSCERT-27JAN-BIR",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): What cases will the Supreme Court agree to hear in 2026?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXSCOTUSCERT-27JAN-MOY",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): What cases will the Supreme Court agree to hear in 2026?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXSCOTUSCERT-27JAN-PHA",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): What cases will the Supreme Court agree to hear in 2026?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXSCOTUSAICOPYRIGHT-27JAN-AICOPYRIGHT",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will the SCOTUS hear a case about AI and copyright law before 2027?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXCOMEYDISMISS-27-27JAN01",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will James Comey’s threat case be dismissed?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXCOMEYDISMISS-27-27JUL01",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will James Comey’s threat case be dismissed?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXCIT301-BBAR27",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will the CIT strike down Trump's Section 301 tariffs in 2026?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXBLOCK75VISA-26NOV24",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will courts let the 75-country visa suspension resume?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "kalshi",
+   "scope": "market",
+   "key": "KXFCCLICENSECASE-ABC27",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): Will a court block the FCC's ABC license review in 2026?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x50378a9069427b82e68dd334fcf40bae1e077c0658214926c3635ff64c539bbc",
+   "reason": "hand-reviewed DOC_SETTLED strict (federal_register): Trump declares election interference national emergency by...?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x15d9c9f8769f3e4ad6621e09f39e7c1e599ba40f882444ffdbb39e0879927dba",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What will OpenAI's IPO valuation be?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x956d27f8f2a7f952312c5b94ca9c32c9ecb31fea8cf808d2f970702e2636ec73",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What will OpenAI's IPO valuation be?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x717578911883ab218f3c4c5a180998640d491dfe3787d7c3f6ecdabeb4983969",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What will OpenAI's IPO valuation be?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x711e378c23a98bc40c531db1707c807c3e0ab725ef9695b461635a5784249448",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What will OpenAI's IPO valuation be?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x6be99cef3ee36846ffb9a796a0ee43997b7b889f20f8b541f6f18ff66d3bf95e",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What will OpenAI's IPO valuation be?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0xd4002529e7dafbac0c068946cab4812dbdb1f3be7399a9a6f4bb0eabd9ad78ac",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What will OpenAI's IPO valuation be?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x3790fa18b4cac0fa4314927ca82aa9553f422afedda44f98c118f9b2f5db6169",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What will OpenAI's IPO valuation be?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0xad523086957c401779d7deed21d3ec27d5f482d56de143bc030d82fade717169",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What will OpenAI's IPO valuation be?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x8408109f199e23e910b5ee08e885ab197283d748e831d0a1fcb733a3621f15ab",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What will Anthropic's IPO valuation be?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x504a33da236817ce4ffb63421f899d1030bb843d496fee11aff31dca3fea397c",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What will Anthropic's IPO valuation be?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x366a98120ec16a252876ffd8b5d64fc170d53277bbe91daf5218e3bd69a24853",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What will Anthropic's IPO valuation be?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x976042b4a9d2008c9b2ea8d3ab6c8e74ee6e98726efbc50b5347d806ef44bc01",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What will Anthropic's IPO valuation be?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x1bcd95f94c2955d1b88a988f54d857be1142249d91a96c7de92376b6f9281100",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What will Anthropic's IPO valuation be?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x2af031e2c2f87cc6da423167ba33d14bbf50beb6ee3ccea24fabfb8f6c675431",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What will Anthropic's IPO valuation be?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0xdb7f5d087244f97c68eae7d3251fc1117a57aa508dfdbe2c76ef8ec8fbaeb154",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What will Anthropic's IPO valuation be?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x55eb1723c4ee4d2675bfefc98863458fc173c74a27f43481f56049a2b5659816",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What will Anthropic's IPO valuation be?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x73e085580071e01460472af2645a2d655a4df16f24382407a68341a4c6a543d4",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): US files Ilhan Omar denaturalization case by...?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0xac78f27df693053f8cb90371a4403c5f0d3983b504175976845e1bccec305bf7",
+   "reason": "hand-reviewed DOC_SETTLED strict (court/agency): US files Ilhan Omar denaturalization case by...?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0xe2234c1d750873a4a11870c0c3d4a366ad5e39ed286067b73377589bd825f862",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): How much will Anthropic raise in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0xc7af14e0b0172a24a101c3aa3f1b0665298ac822b34811be00bfbead992ca135",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): How much will Anthropic raise in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x1a52286988417ae3df16bcfaa59cada0b096136b017001d92383c97b3384d558",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): How much will Anthropic raise in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0xf362631b5af91f5a9ad0b8af9e8550f1accec63e6d3d917438fe023ad6f3392c",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): How much will Anthropic raise in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0xd51d590a59d0cfe46eabd0f92818fd15edf479cb84544563cdd511489fc92e87",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): How much will Anthropic raise in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x39abb87d32a470bec04c72cf2c54927fba1a1a8760802fce7fee838f03b5cb2f",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): How much will Anthropic raise in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0xd7387459624f437759ccc6a47a917a4f4f1fc8a9d9ec087f4c5590549a9e3a4f",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): How much will Anthropic raise in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x046691c950a6f7392e835b9515bfc48fbb97a5914ad2e3bf735a9ca47f35f951",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): How much will Anthropic raise in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x4bb800a8c3781f21671905d32f606b3e7073076bb6b2def465eafc903b3e1843",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): How much will Anthropic raise in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0xcd536db9847d5c7e2b115ca12dc68e5b7b13b05519685ed2b307310c7b054825",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What % of Anthropic will be sold in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0xd9d84336275ddc75bf3f3d31d4df0de4cdbb54de85b15f8957aa924b7ea4243c",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What % of Anthropic will be sold in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0xe3fc4414dd4ba6f74b3adabf8135f649ecade0773ecb16d7d678aa54443abb72",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What % of Anthropic will be sold in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x757843e08714bca24f6cbb3bf8ba3ece4559458198b21a395b2e40d72a1625bb",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What % of Anthropic will be sold in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x8f010d3a061234cd8397ac2218e8730fcf563f54ea08ff8db5d4335d9219b6f6",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What % of Anthropic will be sold in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x7ed404b03e79fb1d9279fe95bf0c6115a4b5c4fe7e933c5a0abb731829351ae6",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What % of Anthropic will be sold in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x913bcd06602da4bd0114b017540bfdde3e8e8dc5926dee8b3a55ff616c3299ce",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What % of Anthropic will be sold in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0xdad6a115eb93136fdc360c5b2b5fa373e6d727b4208f81f33ee44967097ed69b",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What % of Anthropic will be sold in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x2e878d47b8b936ece963ff30509cac0598eaeb63198fb82a4f093abcea776ded",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What % of Anthropic will be sold in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  },
+  {
+   "venue": "polymarket",
+   "scope": "market",
+   "key": "0x0065d577caa5c5a165abd342f693f3e053dfdce714d93e2a171417b5f2349dfe",
+   "reason": "hand-reviewed DOC_SETTLED strict (sec): What % of Anthropic will be sold in its IPO?",
+   "reviewer": "ai_assisted_slice_review_2026-11-13 (user-approved 2026-11-14)"
+  }
+ ]
+}
