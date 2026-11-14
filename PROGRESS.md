@@ -10,4 +10,5 @@ advice only (labeling-panel adjudication, advisor).
 
 | Task | Start | End | Status | Commits | Tests after | Notes |
 |---|---|---|---|---|---|---|
-| T1 E2 amendment + README | 23:44 | 23:58 | done | (next commit) | 320 | Amendment 1 appended pre-event (verified no EFFECT/424B at 04:45Z); Polymarket data API v2 gives trade-level history (v1 retired) |
+| T1 E2 amendment + README | 23:44 | 23:58 | done | e0b03c9 | 320 | Amendment 1 appended pre-event (verified no EFFECT/424B at 04:45Z); Polymarket data API v2 gives trade-level history (v1 retired) |
+| T2 E2 analysis script | 23:58 | 00:05 | done | (this commit) | 367 | Opus checker found 7 deviations, all fixed (float boundaries, 24 h settle wait, market selection, CLOB fallback, outcome_index strictness, gross+net shown); dry-run fixture regenerated (new capacity_gross field only) |

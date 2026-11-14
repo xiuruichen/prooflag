@@ -10,7 +10,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from prooflag.ingest.http import VenueClient
-from prooflag.ingest.models import PricePoint, RawMarket, Status
+from prooflag.ingest.models import PricePoint, RawMarket, Status, Trade
 
 log = logging.getLogger(__name__)
 EVENTS_PAGE_LIMIT = 50  # >50 is served gzip-only (HTTP 406 otherwise)
@@ -67,11 +67,13 @@ class PolymarketSource:
         gamma_base: str,
         clob_base: str,
         clock: Callable[[], datetime] = lambda: datetime.now(UTC),
+        data_base: str = "https://data-api.polymarket.com/v2",
     ) -> None:
         self._c = client
         self._gamma = gamma_base.rstrip("/")
         self._clob = clob_base.rstrip("/")
         self._clock = clock
+        self._data = data_base.rstrip("/")
         self.parse_errors = 0  # markets skipped (malformed or without an id) in the latest call
 
     def _safe_parse(self, ev: dict[str, Any] | None, m: Any) -> RawMarket | None:
@@ -180,6 +182,33 @@ class PolymarketSource:
                     if rm is not None:
                         found[rm.market_id] = rm
         return list(found.values())
+
+    # -- trade-level history (public data API v2; wallet fields are never read) -------------------
+    def iter_trades(self, condition_id: str) -> Iterator[Trade]:
+        """Executed trades of a market as YES-price trades (a 'No'-outcome trade at p is a YES
+        trade at 1-p). Newest first. Malformed rows are skipped and counted."""
+        self.parse_errors = 0
+        cursor = ""
+        while True:
+            params: dict[str, Any] = {"conditionId": condition_id, "limit": 1000}
+            if cursor:
+                params["cursor"] = cursor
+            data = self._c.get_json(f"{self._data}/trades", params)
+            for i, t in enumerate(data.get("data") or []):
+                try:
+                    price, size = float(t["price"]), float(t["size"])
+                    if not (math.isfinite(price) and math.isfinite(size)):
+                        raise ValueError("non-finite")
+                    yes_price = price if int(t["outcome_index"]) == 0 else 1.0 - price
+                    ts = datetime.fromtimestamp(int(t["timestamp"]), UTC)
+                    tid = f"{t.get('transaction_hash', '')}-{t['timestamp']}-{price}-{size}-{i}"
+                    yield Trade(ts, yes_price, size, str(t.get("side", "")).lower(), tid)
+                except (KeyError, ValueError, TypeError):
+                    self.parse_errors += 1
+            pg = data.get("pagination") or {}
+            cursor = pg.get("next_cursor") or ""
+            if not (pg.get("has_more") and cursor):
+                return
 
     # -- history -----------------------------------------------------------------------------
     def history(

@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     kalshi_base: str = "https://external-api.kalshi.com/trade-api/v2"
     gamma_base: str = "https://gamma-api.polymarket.com"
     clob_base: str = "https://clob.polymarket.com"
+    poly_data_base: str = "https://data-api.polymarket.com/v2"
     venue_max_rps: float = Field(default=4.0, gt=0, le=10.0)
     # "Meaningful" = estimated 24h dollar volume (Kalshi: contracts x last price). OI alone and
     # Polymarket liquidity never count.
