@@ -1,17 +1,20 @@
 """Venue fee formulas for the edge study.
 
+Kalshi (standard schedule confirmed by the user, 2026-11-14): taker fee = round_up_to_cent(0.07 x
+multiplier x C x p x (1-p)); maker fee on maker-fee markets = round_up_to_cent(0.0175 x multiplier x
+C x p x (1-p)); rounding is up to the cent PER ORDER. Each series has a fee type from the API:
+'quadratic' (takers only), 'quadratic_with_maker_fees' (takers and makers), 'fee_free'; 'flat' and
+any other type are NOT guessed and raise UnsupportedFeeTypeError.
 Polymarket (docs.polymarket.com/trading/fees): taker fee = C x rate x (p x (1-p))^exponent, rounded
 to 5 decimals, minimum 0.00001; makers pay nothing.
-Kalshi: the formula could NOT be verified from its docs (fee pages rate-limited). ASSUMPTION used
-throughout: taker fee = ceil-to-cent(0.07 x multiplier x C x p x (1-p)) per order (the series
-reports fee_type 'quadratic', fee_multiplier 1). Every study result also reports a fee-free run.
 """
 
 from __future__ import annotations
 
 import math
 
-KALSHI_COEFFICIENT = 0.07  # ASSUMPTION, see module docstring
+KALSHI_COEFFICIENT = 0.07
+KALSHI_MAKER_COEFFICIENT = 0.0175
 
 
 def kalshi_taker_fee(
@@ -35,3 +38,26 @@ def pnl_buy_yes_hold(count: float, price: float, *, yes: bool, fee: float) -> fl
     """Profit of buying ``count`` YES contracts at ``price`` and holding to settlement."""
     gross = count * (1.0 - price) if yes else -count * price
     return gross - fee
+
+
+class UnsupportedFeeTypeError(Exception):
+    """A series fee type whose formula we do not know; never guessed."""
+
+
+def kalshi_fee(
+    fee_type: str, multiplier: float, count: float, price: float, *, role: str = "taker"
+) -> float:
+    """Kalshi fee for one order, by the series' fee type (see module docstring)."""
+    if role not in ("taker", "maker"):
+        raise ValueError(f"role must be 'taker' or 'maker', got {role!r}")
+    if fee_type == "fee_free":
+        return 0.0
+    if fee_type not in ("quadratic", "quadratic_with_maker_fees"):
+        raise UnsupportedFeeTypeError(f"unsupported Kalshi fee type {fee_type!r}")
+    if role == "taker":
+        return kalshi_taker_fee(count, price, multiplier=multiplier)
+    if fee_type == "quadratic":
+        return 0.0
+    return kalshi_taker_fee(
+        count, price, coefficient=KALSHI_MAKER_COEFFICIENT, multiplier=multiplier
+    )

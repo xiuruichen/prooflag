@@ -180,3 +180,14 @@ def test_a_week_is_usable_only_with_a_trade_before_the_posting() -> None:
     c = analyze_market(market(1), parse_rule(RULE_TXT.format(n=1)), EOS, trades, [])
     assert c.eligible and c.pi.first90 is not None and c.pi.price_at is None
     assert summarize_weeks([c]).n_weeks_usable == 0
+
+
+def test_a_custom_fee_function_is_used_for_pnl_and_capacity() -> None:
+    trades = [tr(utc(23, 14), 0.40), tr(utc(23, 15, 5), 0.70, 100.0)]
+    quotes = [Quote(utc(23, 14), 0.38, 0.42)]
+    flat_fee = lambda count, price: 1.0  # noqa: E731
+    c = analyze_market(
+        market(1), parse_rule(RULE_TXT.format(n=1)), EOS, trades, quotes, fee_fn=flat_fee
+    )
+    assert c.pi.pnl_per_contract == pytest.approx(0.58 - 1.0 / 100)  # fee 1.0 per 100 contracts
+    assert c.pi.capacity.fees == pytest.approx(1.0)

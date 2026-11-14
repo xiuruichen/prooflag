@@ -22,7 +22,7 @@ from prooflag.edge.cases import (
     summarize_weeks,
 )
 from prooflag.edge.eo import parse_rule
-from prooflag.edge.fees import polymarket_taker_fee
+from prooflag.edge.fees import kalshi_fee, polymarket_taker_fee
 from prooflag.edge.ipo import reaction
 from prooflag.edge.report import bucket_table, ci, dist, f, md_table, money, offsets_table, ts
 from prooflag.edge.stats import (
@@ -215,6 +215,12 @@ def main() -> None:
     eos, pi_stats = eo_docs_from_inputs(eo_rows)
     manifest = read_gz(IN / "manifest.json.gz")
     fee_info = read_gz(IN / "kalshi_fee_info.json.gz")
+    fee_type = str(fee_info.get("fee_type"))
+    fee_mult = float(fee_info.get("fee_multiplier") or 1.0)
+
+    def fee_fn(count: float, price: float) -> float:
+        # raises UnsupportedFeeTypeError for flat / unknown series fee types: never guessed
+        return kalshi_fee(fee_type, fee_mult, count, price)
 
     cases: list[MarketCase] = []
     unparsed: list[str] = []
@@ -224,7 +230,9 @@ def main() -> None:
             unparsed.append(m["ticker"])
             continue
         cases.append(
-            analyze_market(m, rule, eos, trades.get(m["ticker"], []), quotes.get(m["ticker"], []))
+            analyze_market(
+                m, rule, eos, trades.get(m["ticker"], []), quotes.get(m["ticker"], []), fee_fn
+            )
         )
 
     summ_pi = summarize_weeks(cases, "pi")
@@ -295,11 +303,12 @@ def main() -> None:
         )
     )
     w(
-        "\nFee assumption: Polymarket formulas are from docs.polymarket.com/trading/fees; **Kalshi's "
-        "fee formula could not be verified** (fee pages rate-limited). Assumed taker fee = "
-        "ceil-to-cent(0.07 x multiplier x C x p x (1-p)) per order, multiplier from the series "
-        f"({fee_info.get('fee_type')}, x{fee_info.get('fee_multiplier')}); the fee-free row bounds the "
-        "effect.\n"
+        "\nFees: Kalshi per the standard schedule (confirmed by the user 2026-11-14): taker fee = "
+        "round_up_to_cent(0.07 x multiplier x C x p x (1-p)) per order (100 contracts here); maker fee on "
+        "maker-fee series round_up_to_cent(0.0175 x multiplier x C x p x (1-p)); the series fee type is read "
+        "from the API and unsupported types (flat, unknown) raise instead of being guessed. This series: "
+        f"{fee_info.get('fee_type')}, multiplier x{fee_info.get('fee_multiplier')}. Polymarket per "
+        "docs.polymarket.com/trading/fees (taker only). The fee-free row shows the effect of fees.\n"
     )
 
     w("## Data and validation\n")
@@ -454,7 +463,7 @@ def main() -> None:
         "(or the URL timestamp fallback).\n"
         "- Trades give exact times and sizes; bid/ask come from hourly candles carried forward, so the buy "
         "price at t+2 min can be up to 24 h stale (pre-registered limit). Thin markets: absolute numbers are small.\n"
-        "- Kalshi fee formula unverified (assumption stated above); results are also shown fee-free.\n"
+        "- Kalshi fees: standard schedule confirmed by the user (2026-11-14); results are also shown fee-free.\n"
         "- The deciding-document logic assumes the venue resolves strictly by FR signing date, which the "
         "validation row above tests market by market.\n"
     )

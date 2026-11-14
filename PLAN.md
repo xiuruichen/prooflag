@@ -366,6 +366,10 @@ Probes showed the first draft of the rules was wrong or incomplete in these ways
 8. **Reproducibility:** study inputs (events, markets, trades, candles, EO documents) are committed under `studies/e1/inputs/`; `docs/edge-study.md` is regenerated offline from them.
 9. **Fees.** Polymarket (docs.polymarket.com/trading/fees): taker fee = C × rate × p × (1 − p) using the market's `feeSchedule` (the Strategy market: rate 0.04, taker-only); makers pay nothing. **Kalshi's formula could not be verified from its docs** (fee pages rate-limited); assumption: taker fee = ceil-to-cent(0.07 × fee_multiplier × C × p × (1 − p)) per order (the series reports `fee_type: quadratic, fee_multiplier: 1`). Every Kalshi P&L is reported under that assumption AND fee-free as a sensitivity. The Strategy case has no historical bid/ask (CLOB price only): its P&L is **price-based** and is excluded from the pooled verdict.
 
+### E1 Amendment B (2026-11-14): fees
+
+The user confirmed the standard Kalshi fee schedule: taker fee = round_up_to_cent(0.07 x C x P x (1-P)); maker fee on maker-fee markets = round_up_to_cent(0.0175 x C x P x (1-P)); rounding up per order. The series fee type is read from the API (`quadratic` takers only, `quadratic_with_maker_fees`, `fee_free`); `flat` and unknown types raise and are never guessed. The E1 P&L was rerun with the series' fee type: identical to the earlier run (the earlier assumption equalled the standard schedule); the fee-free run is kept alongside. Amendment A item 9's "unverified" wording is superseded. No change to the verdict.
+
 ## 11. Phase 2 roadmap
 
 **First post-MVP milestone: CourtListener** (docket-ID linker, authenticated polling ~5,000 q/h; 20 strict court/agency events in the slice, mostly SCOTUS cert grants and PACER-resolved rulings), then the items below. Original list:

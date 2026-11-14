@@ -214,3 +214,23 @@ def test_verdict_without_any_pnl_estimate_does_not_invent_a_pnl_criterion() -> N
         median_capacity_usd=50.0,
     )
     assert r2.label == "NO SPEED EDGE" and not any("upper 95%" in x for x in r2.reasons)
+
+
+def test_kalshi_fee_by_series_fee_type() -> None:
+    from prooflag.edge.fees import UnsupportedFeeTypeError, kalshi_fee
+
+    # standard quadratic: taker = round_up(0.07 x C x P x (1-P)), makers pay nothing
+    assert kalshi_fee("quadratic", 1.0, 100, 0.5) == 1.75
+    assert kalshi_fee("quadratic", 1.0, 100, 0.5, role="maker") == 0.0
+    # maker-fee series: maker = round_up(0.0175 x C x P x (1-P)) = 0.4375 -> 0.44
+    assert kalshi_fee("quadratic_with_maker_fees", 1.0, 100, 0.5) == 1.75
+    assert kalshi_fee("quadratic_with_maker_fees", 1.0, 100, 0.5, role="maker") == 0.44
+    assert kalshi_fee("quadratic", 2.0, 100, 0.5) == 3.5  # series multiplier scales the fee
+    assert kalshi_fee("fee_free", 1.0, 100, 0.5) == 0.0
+    # flat / unknown types are NOT guessed
+    with pytest.raises(UnsupportedFeeTypeError):
+        kalshi_fee("flat", 1.0, 100, 0.5)
+    with pytest.raises(UnsupportedFeeTypeError):
+        kalshi_fee("something_new", 1.0, 100, 0.5)
+    with pytest.raises(ValueError):
+        kalshi_fee("quadratic", 1.0, 100, 0.5, role="broker")

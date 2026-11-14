@@ -5,6 +5,7 @@ from __future__ import annotations
 import gzip
 import json
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
@@ -33,6 +34,7 @@ from prooflag.edge.prices import (
 from prooflag.edge.stats import bootstrap_mean_ci, quantile, verdict, wilson
 from prooflag.ingest.models import Trade
 
+FeeFn = Callable[[float, float], float]  # (contracts, price) -> fee in dollars for one order
 STALE = timedelta(hours=24)  # pre-registered: a quote/trade older than this is "no quote"
 OFFSETS = (timedelta(minutes=1), timedelta(minutes=15), timedelta(hours=1), timedelta(hours=6))
 BUY_DELAY = timedelta(minutes=2)
@@ -102,6 +104,7 @@ def _analyze_basis(
     quotes: list[Quote],
     close: datetime | None,
     open_time: datetime | None,
+    fee_fn: FeeFn = kalshi_taker_fee,
 ) -> BasisResult:
     r = BasisResult()
     dec = deciding_eo(rule, window_eos, basis)
@@ -133,20 +136,18 @@ def _analyze_basis(
     if close is None or t_buy <= close:
         r.ask = ask_at(quotes, t_buy, STALE)
     if r.ask is not None:
-        fee = kalshi_taker_fee(CONTRACTS, r.ask)
+        fee = fee_fn(CONTRACTS, r.ask)
         r.pnl_per_contract = pnl_buy_yes_hold(CONTRACTS, r.ask, yes=True, fee=fee) / CONTRACTS
         r.pnl_free_per_contract = pnl_buy_yes_hold(CONTRACTS, r.ask, yes=True, fee=0.0) / CONTRACTS
     if close is None or t_buy <= close:
         lt_buy = last_trade_at(trades, t_buy, STALE)
         if lt_buy is not None:
             r.price_buy = lt_buy.price
-            fee_p = kalshi_taker_fee(CONTRACTS, lt_buy.price)
+            fee_p = fee_fn(CONTRACTS, lt_buy.price)
             r.pnl_price_per_contract = (
                 pnl_buy_yes_hold(CONTRACTS, lt_buy.price, yes=True, fee=fee_p) / CONTRACTS
             )
-    r.capacity = capacity(
-        trades, t_buy, close or t_buy + timedelta(days=30), CEILING, kalshi_taker_fee
-    )
+    r.capacity = capacity(trades, t_buy, close or t_buy + timedelta(days=30), CEILING, fee_fn)
     # share of the final jump already realized at the posting
     start_t = datetime.combine(rule.start, time(0, 0), ET)
     p0t = last_trade_at(trades, start_t, timedelta(days=30))
@@ -164,6 +165,7 @@ def analyze_market(
     eos: list[EoDoc],
     trades: list[Trade],
     quotes: list[Quote],
+    fee_fn: FeeFn = kalshi_taker_fee,
 ) -> MarketCase:
     week = market["event_ticker"]
     assert rule is not None, f"unparsed rule for {market['ticker']}"
@@ -189,8 +191,8 @@ def analyze_market(
         case.excluded_reason = "not Yes-implied" if implied == "no" else "result mismatch"
         return case
     open_time = _dt(market.get("open_time"))
-    case.pi = _analyze_basis(rule, win, "pi", trades, quotes, close, open_time)
-    case.pub = _analyze_basis(rule, win, "pub", trades, quotes, close, open_time)
+    case.pi = _analyze_basis(rule, win, "pi", trades, quotes, close, open_time, fee_fn)
+    case.pub = _analyze_basis(rule, win, "pub", trades, quotes, close, open_time, fee_fn)
     dec = deciding_eo(rule, win, "pub")
     if dec is not None and close is not None:
         case.close_vs_pub_days = (close.astimezone(ET).date() - dec.publication_date).days
