@@ -43,6 +43,12 @@ for x in C:
     seen.add(k)
     b,f=bucket(x); x['bucket']=b; x['family']=f
     x['pass_kalshi_oi_or_vol']=x['vol24']>=1000 or (x['oi'] is not None and x['oi']>=2000)
+    x['active']=x['vol24']>=1000   # tightened filter: real 24h activity only (no OI-only, no liquidity)
+    t=((x['event_title'] or '')+' '+(x['title'] or '')).lower()
+    if ('anthropic' in t or 'openai' in t) and 'ipo' in t: x['cluster']='issuer_ipo_family'
+    elif 'executive orders will trump sign this week' in t: x['cluster']='weekly_eo:'+(x['event_title'] or '')[-13:]
+    elif 'executive orders will trump sign' in t: x['cluster']='eo_second_term'
+    else: x['cluster']=(x['venue'],x['event_title'])
     x['poly_liq_only']=(x['venue']=='polymarket' and x['vol24']<1000 and (x['liquidity'] or 0)>=2000)
     rows.append(x)
 out=collections.defaultdict(lambda:[set(),0,0])  # events, markets, poly_liq_only_markets
@@ -59,6 +65,8 @@ for b in ('DOC_SETTLED_STRICT','DOC_SETTLED_ANYOF','DOC_LEADING'):
     for x in rows:
         if x['bucket']==b and x['meaningful']: ev.add((x['venue'],x['event_title'])); m+=1
     print('TOTAL',b,'events',len(ev),'markets',m)
+    act=[x for x in rows if x['bucket']==b and x['active']]
+    print('   TIGHT(vol24>=1000):',len(act),'markets,',len({x['cluster'] if isinstance(x['cluster'],str) else x['cluster'] for x in act}),'clusters; by family',dict(collections.Counter(x['family'] for x in act)))
     if '-v' in sys.argv:
         for e in sorted(ev): print('   ',e)
 json.dump(rows,open('data/slice_classified.json','w',encoding='utf-8'),indent=1)
