@@ -8,6 +8,7 @@ completed (cursor exhausted) per venue.
 
 Usage: python scripts/slice_count.py [--max-pages N] [--out slice_report.md]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -35,14 +36,21 @@ SLEEP = 0.25
 TAGS: dict[str, re.Pattern[str]] = {
     "sec": re.compile(
         r"\b(SEC|EDGAR|Securities and Exchange Commission|8-K|10-Q|10-K|Form 4|S-1|424B\d?|"
-        r"13D|13G|sec\.gov|prospectus|registration statement)\b"),
+        r"13D|13G|sec\.gov|prospectus|registration statement)\b"
+    ),
     "court": re.compile(
         r"\b(docket|court|ruling|judge|indictment|CourtListener|PACER|lawsuit|verdict|"
-        r"Supreme Court|appeals|sentenced|convicted)\b", re.I),
-    "fed_register": re.compile(r"\b(Federal Register|federalregister\.gov|Code of Federal)\b", re.I),
+        r"Supreme Court|appeals|sentenced|convicted)\b",
+        re.I,
+    ),
+    "fed_register": re.compile(
+        r"\b(Federal Register|federalregister\.gov|Code of Federal)\b", re.I
+    ),
     "press_release": re.compile(
         r"\b(press release|official announcement|newsroom|investor relations|"
-        r"official website|official statement|official blog)\b", re.I),
+        r"official website|official statement|official blog)\b",
+        re.I,
+    ),
 }
 
 
@@ -57,12 +65,12 @@ def get(url: str, params: dict[str, str | int] | None = None) -> dict:
                 return json.loads(r.read().decode())
         except urllib.error.HTTPError as e:
             if e.code == 429 or e.code >= 500:
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
                 last = e
                 continue
             raise
         except urllib.error.URLError as e:
-            time.sleep(2 ** attempt)
+            time.sleep(2**attempt)
             last = e
     raise RuntimeError(f"GET failed: {url}: {last}")
 
@@ -99,7 +107,11 @@ def scan_kalshi(max_pages: int, stats: dict) -> list[dict]:
     cursor = ""
     completed = False
     for page in range(max_pages):
-        params: dict[str, str | int] = {"status": "open", "limit": 200, "with_nested_markets": "true"}
+        params: dict[str, str | int] = {
+            "status": "open",
+            "limit": 200,
+            "with_nested_markets": "true",
+        }
         if cursor:
             params["cursor"] = cursor
         data = get(f"{base}/events", params)
@@ -118,13 +130,22 @@ def scan_kalshi(max_pages: int, stats: dict) -> list[dict]:
                 tg = tags_in(text)
                 if not tg:
                     continue
-                out.append({
-                    "venue": "kalshi", "id": m.get("ticker"), "title": m.get("title") or ev.get("title"),
-                    "event_title": ev.get("title"), "category": cat, "tags": tg,
-                    "settlement_sources": src, "vol24": num(m.get("volume_24h_fp")),
-                    "oi": num(m.get("open_interest_fp")), "liquidity": None,
-                    "close": m.get("close_time"), "rules": text,
-                })
+                out.append(
+                    {
+                        "venue": "kalshi",
+                        "id": m.get("ticker"),
+                        "title": m.get("title") or ev.get("title"),
+                        "event_title": ev.get("title"),
+                        "category": cat,
+                        "tags": tg,
+                        "settlement_sources": src,
+                        "vol24": num(m.get("volume_24h_fp")),
+                        "oi": num(m.get("open_interest_fp")),
+                        "liquidity": None,
+                        "close": m.get("close_time"),
+                        "rules": text,
+                    }
+                )
         cursor = data.get("cursor") or ""
         if page % 5 == 0:
             print(f"[kalshi] page {page + 1} events_seen={stats['kalshi_events']}", file=sys.stderr)
@@ -142,7 +163,12 @@ def scan_poly(max_pages: int, stats: dict) -> list[dict]:
     completed = False
     now = datetime.now(timezone.utc).isoformat()
     for page in range(max_pages):
-        params: dict[str, str | int] = {"closed": "false", "active": "true", "archived": "false", "limit": 50}
+        params: dict[str, str | int] = {
+            "closed": "false",
+            "active": "true",
+            "archived": "false",
+            "limit": 50,
+        }
         if cursor:
             params["after_cursor"] = cursor
         data = get(f"{GAMMA}/events/keyset", params)
@@ -166,15 +192,24 @@ def scan_poly(max_pages: int, stats: dict) -> list[dict]:
                 tg = tags_in(text)
                 if not tg:
                     continue
-                out.append({
-                    "venue": "polymarket", "id": m.get("conditionId") or m.get("id"),
-                    "title": m.get("question"), "event_title": ev.get("title"), "category": None,
-                    "poly_tags": labels, "tags": tg, "settlement_sources": [m.get("resolutionSource") or ""],
-                    "vol24": num(m.get("volume24hr")), "oi": None,
-                    "event_oi": num(ev.get("openInterest")),
-                    "liquidity": num(m.get("liquidityNum") or m.get("liquidity")),
-                    "close": end, "rules": text,
-                })
+                out.append(
+                    {
+                        "venue": "polymarket",
+                        "id": m.get("conditionId") or m.get("id"),
+                        "title": m.get("question"),
+                        "event_title": ev.get("title"),
+                        "category": None,
+                        "poly_tags": labels,
+                        "tags": tg,
+                        "settlement_sources": [m.get("resolutionSource") or ""],
+                        "vol24": num(m.get("volume24hr")),
+                        "oi": None,
+                        "event_oi": num(ev.get("openInterest")),
+                        "liquidity": num(m.get("liquidityNum") or m.get("liquidity")),
+                        "close": end,
+                        "rules": text,
+                    }
+                )
         cursor = data.get("next_cursor") or ""
         if page % 5 == 0:
             print(f"[poly] page {page + 1} events_seen={stats['poly_events']}", file=sys.stderr)
@@ -208,19 +243,26 @@ def main() -> int:
             by[(t, c["venue"])][0] += 1
             by[(t, c["venue"])][1] += int(c["meaningful"])
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    L = [f"# Slice scan v2 ({now})", "",
-         f"Kalshi base: `{stats.get('kalshi_base')}`; COMPLETED={stats['kalshi_completed']}; "
-         f"events={stats['kalshi_events']} (excluded sports/mve={stats['kalshi_excluded_events']}); "
-         f"open markets scanned={stats['kalshi_markets']}",
-         f"Polymarket: COMPLETED={stats['poly_completed']}; events={stats['poly_events']} "
-         f"(excluded sports={stats['poly_excluded_events']}); open markets scanned={stats['poly_markets']}; "
-         f"skipped expired-unresolved={stats['poly_expired_unresolved']}",
-         f"Meaningful (regex pass): vol24>={MIN_VOL24:.0f} OR Kalshi OI>={MIN_OI:.0f}. "
-         "Polymarket liquidity / event OI NOT used; stored separately.", "",
-         "| tag | venue | regex-matched | meaningful |", "|---|---|---|---|"]
+    L = [
+        f"# Slice scan v2 ({now})",
+        "",
+        f"Kalshi base: `{stats.get('kalshi_base')}`; COMPLETED={stats['kalshi_completed']}; "
+        f"events={stats['kalshi_events']} (excluded sports/mve={stats['kalshi_excluded_events']}); "
+        f"open markets scanned={stats['kalshi_markets']}",
+        f"Polymarket: COMPLETED={stats['poly_completed']}; events={stats['poly_events']} "
+        f"(excluded sports={stats['poly_excluded_events']}); open markets scanned={stats['poly_markets']}; "
+        f"skipped expired-unresolved={stats['poly_expired_unresolved']}",
+        f"Meaningful (regex pass): vol24>={MIN_VOL24:.0f} OR Kalshi OI>={MIN_OI:.0f}. "
+        "Polymarket liquidity / event OI NOT used; stored separately.",
+        "",
+        "| tag | venue | regex-matched | meaningful |",
+        "|---|---|---|---|",
+    ]
     for (t, v), (n, nm) in sorted(by.items()):
         L.append(f"| {t} | {v} | {n} | {nm} |")
-    L.append(f"\nTotal regex-matched: {len(cands)}; meaningful: {sum(c['meaningful'] for c in cands)}")
+    L.append(
+        f"\nTotal regex-matched: {len(cands)}; meaningful: {sum(c['meaningful'] for c in cands)}"
+    )
     Path(args.out).write_text("\n".join(L) + "\n", encoding="utf-8")
     print("\n".join(L))
     return 0
