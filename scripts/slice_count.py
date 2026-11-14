@@ -224,7 +224,7 @@ def scan_poly(max_pages: int, stats: dict) -> list[dict]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--max-pages", type=int, default=3000)
-    ap.add_argument("--out", default="slice_report.md")
+    ap.add_argument("--out", default="docs/dev-history/slice_report.md")
     args = ap.parse_args()
     stats: dict = defaultdict(int)
 

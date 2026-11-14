@@ -1,6 +1,6 @@
 # E1 Edge study: do prediction markets lag public documents enough to trade on?
 
-Generated offline from `studies/e1/inputs/` (fetched 2026-11-14T04:03:51.682907+00:00, code `8894f5fcc3`) by `scripts/edge_study.py`. Pre-registered rules: PLAN.md section 10d (E1 + Amendment A). The verdict below is computed by code from those rules; the commentary at the end is hand-written and post-hoc.
+Generated offline from `studies/e1/inputs/` (fetched 2026-11-14T04:03:51.682907+00:00, code `8894f5fcc3`) by `scripts/edge_study.py`. Pre-registered rules: docs/dev-history/PLAN.md section 10d (E1 + Amendment A). The verdict below is computed by code from those rules; the commentary at the end is hand-written and post-hoc.
 
 ## Verdict (weekly executive-order markets, public-inspection basis)
 

@@ -15,7 +15,7 @@
 >
 > **Slice result (F2, hand-reviewed):** strict DOC_SETTLED = 33 events / 66 markets (SEC 8/21, Federal Register 5/23, court/agency 20/22); **with the tightened filter (estimated 24h DOLLAR volume ≥ $1,000; Kalshi volume is in contracts, so it is converted as contracts × last price): 15 strict markets in 4 independent clusters** (corrected from 19/4, which compared Kalshi contracts to dollars): Anthropic/OpenAI IPO family 11 markets, Trump election-interference emergency 1, Ilhan Omar denaturalization 2, current-week EO 1. Live volume is thin and concentrated; the weekly EO series (new cluster every week) is the main renewable supply of independent cases, which is why it is the eval priority. Any-of = 35 events / 119 markets (not counted). Scripts: `scripts/slice_count.py`, `scripts/classify_slice.py`.
 >
-> Environment verified: the home dir `C:\Users\chenf` is itself a git repo, so the project lives outside it at `C:\dev\prooflag` with its own repo (Q9/Q10 resolved). Python 3.12.4, Windows 11, 12 threads, 14.8 GB RAM, AMD iGPU (no usable CUDA), Ollama installed, no `llama-server`. Installed Ollama models are vision-language only (`qwen3-vl:2b-instruct`, `playbook-vl`); a text model must be pulled.
+> Environment verified: the home dir `~` is itself a git repo, so the project lives outside it at `C:\dev\prooflag` with its own repo (Q9/Q10 resolved). Python 3.12.4, Windows 11, 12 threads, 14.8 GB RAM, AMD iGPU (no usable CUDA), Ollama installed, no `llama-server`. Installed Ollama models are vision-language only (`qwen3-vl:2b-instruct`, `playbook-vl`); a text model must be pulled.
 
 ## 0. Clarifying questions (answer or accept the default)
 

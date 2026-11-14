@@ -1,4 +1,4 @@
-"""Statistics and the pre-registered verdict rules (PLAN.md E1 + Amendment A)."""
+"""Statistics and the pre-registered verdict rules (docs/dev-history/PLAN.md E1 + Amendment A)."""
 
 from __future__ import annotations
 

@@ -1,6 +1,6 @@
 """E1 edge study (offline): regenerate docs/edge-study.md from studies/e1/inputs/.
 
-No network. Verdict rules are pre-registered in PLAN.md (E1 + Amendment A) and implemented in
+No network. Verdict rules are pre-registered in docs/dev-history/PLAN.md (E1 + Amendment A) and implemented in
 prooflag.edge.stats. Hand-written commentary lives in studies/e1/interpretation.md.
 """
 
@@ -248,7 +248,7 @@ def main() -> None:
     w("# E1 Edge study: do prediction markets lag public documents enough to trade on?\n")
     w(
         f"Generated offline from `studies/e1/inputs/` (fetched {manifest['fetched_at']}, code "
-        f"`{manifest['code_git_sha'][:10]}`) by `scripts/edge_study.py`. Pre-registered rules: PLAN.md "
+        f"`{manifest['code_git_sha'][:10]}`) by `scripts/edge_study.py`. Pre-registered rules: docs/dev-history/PLAN.md "
         "section 10d (E1 + Amendment A). The verdict below is computed by code from those rules; "
         "the commentary at the end is hand-written and post-hoc.\n"
     )
