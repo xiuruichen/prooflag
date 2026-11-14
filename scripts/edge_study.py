@@ -303,7 +303,7 @@ def main() -> None:
         )
     )
     w(
-        "\nFees: Kalshi per the standard schedule (confirmed by the user 2026-11-14): taker fee = "
+        "\nFees: Kalshi per the standard schedule (confirmed by the author 2026-11-14): taker fee = "
         "round_up_to_cent(0.07 x multiplier x C x p x (1-p)) per order (100 contracts here); maker fee on "
         "maker-fee series round_up_to_cent(0.0175 x multiplier x C x p x (1-p)); the series fee type is read "
         "from the API and unsupported types (flat, unknown) raise instead of being guessed. This series: "
@@ -463,7 +463,7 @@ def main() -> None:
         "(or the URL timestamp fallback).\n"
         "- Trades give exact times and sizes; bid/ask come from hourly candles carried forward, so the buy "
         "price at t+2 min can be up to 24 h stale (pre-registered limit). Thin markets: absolute numbers are small.\n"
-        "- Kalshi fees: standard schedule confirmed by the user (2026-11-14); results are also shown fee-free.\n"
+        "- Kalshi fees: standard schedule confirmed by the author (2026-11-14); results are also shown fee-free.\n"
         "- The deciding-document logic assumes the venue resolves strictly by FR signing date, which the "
         "validation row above tests market by market.\n"
     )

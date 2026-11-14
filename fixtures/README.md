@@ -1,6 +1,6 @@
 # Fixtures and third-party data
 
-Tests use recorded, small samples of public data. Nothing here is user data: Polymarket wallet fields are stripped at ingest, and no account identifiers are stored.
+Tests use recorded, small samples of public data. Nothing here is user data: Polymarket wallet fields are stripped at ingest, and no account names or addresses are stored. Polymarket trade rows keep a transaction hash, which is public on-chain.
 
 | Location | Source | Fetched | Terms |
 |---|---|---|---|

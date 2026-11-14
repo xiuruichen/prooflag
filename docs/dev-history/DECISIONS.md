@@ -1,6 +1,6 @@
 # DECISIONS (autonomous run, no human available)
 
-Every judgment call made without asking, with the reason and how to reverse it. `NEEDS RAY` marks anything that
+Every judgment call made without asking, with the reason and how to reverse it. `NEEDS REVIEW` marks anything that
 required a decision I could not make safely.
 
 | # | Time | Decision | Reasoning | How to reverse |

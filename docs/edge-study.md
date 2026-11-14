@@ -22,7 +22,7 @@ Generated offline from `studies/e1/inputs/` (fetched 2026-11-14T04:03:51.682907+
 | median per-week capacity (after-fee profit available below 0.95) | $0.00 (rule: >= $10) |
 | upper-bound floor for 'no edge' | $0.02 |
 
-Fees: Kalshi per the standard schedule (confirmed by the user 2026-11-14): taker fee = round_up_to_cent(0.07 x multiplier x C x p x (1-p)) per order (100 contracts here); maker fee on maker-fee series round_up_to_cent(0.0175 x multiplier x C x p x (1-p)); the series fee type is read from the API and unsupported types (flat, unknown) raise instead of being guessed. This series: quadratic, multiplier x1. Polymarket per docs.polymarket.com/trading/fees (taker only). The fee-free row shows the effect of fees.
+Fees: Kalshi per the standard schedule (confirmed by the author 2026-11-14): taker fee = round_up_to_cent(0.07 x multiplier x C x p x (1-p)) per order (100 contracts here); maker fee on maker-fee series round_up_to_cent(0.0175 x multiplier x C x p x (1-p)); the series fee type is read from the API and unsupported types (flat, unknown) raise instead of being guessed. This series: quadratic, multiplier x1. Polymarket per docs.polymarket.com/trading/fees (taker only). The fee-free row shows the effect of fees.
 
 ## Data and validation
 
@@ -226,7 +226,7 @@ The verdict above is computed from the pre-registered rules. This section is my 
 
 **2. The exceptions are real but early and small.** The only two weeks where public inspection was the first public signal are the market's first two (Oct and Nov 2025). In the first, the price sat at 0.82 until 38 seconds after the 11:15 ET posting, then swept to 0.98 within two seconds, so another participant reacted in under a minute; in the second the price drifted from about 0.89 to 0.97 over a few hours. The other 22 usable weeks (Dec 2025 to Oct 2026) show no such case. Two of 24 weeks is 8% (Wilson 95% roughly 2% to 27%); that is too few to call a pattern, and the best window was seconds long.
 
-**3. The P&L numbers need care.** The primary after-fee P&L (buy at the ask 2 minutes after the posting) rests on only 4 of 24 weeks, because thin markets rarely have a quote within 24 hours; it is about zero. The price-based sensitivity (buy at the last trade, ignoring the spread) shows about +$0.018 per contract, but that is carry from buying a near-certain Yes at 0.97-0.99 and holding for days, not information speed: it exists regardless of who is first and ties up capital for days. Kalshi fees follow the standard schedule the user confirmed on 2026-11-14 (identical to my earlier assumption, so no number changed); the fee-free row is kept alongside.
+**3. The P&L numbers need care.** The primary after-fee P&L (buy at the ask 2 minutes after the posting) rests on only 4 of 24 weeks, because thin markets rarely have a quote within 24 hours; it is about zero. The price-based sensitivity (buy at the last trade, ignoring the spread) shows about +$0.018 per contract, but that is carry from buying a near-certain Yes at 0.97-0.99 and holding for days, not information speed: it exists regardless of who is first and ties up capital for days. Kalshi fees follow the standard schedule the author confirmed on 2026-11-14 (identical to my earlier assumption, so no number changed); the fee-free row is kept alongside.
 
 **4. Strategy (one case, price-based).** The price began rising about five minutes before the 8-K was accepted (0.10 to 0.25 by 11:59Z) and was at 0.50 two minutes after, then the market resolved No. For this EDGAR-settled market the filing was not the first public signal either (the company's own announcement channel came first), and the deadline-basis ambiguity, not speed, decided the outcome. A naive buy at t+2 min lost about $51 per 100 contracts.
 
@@ -304,6 +304,6 @@ The verdict above is computed from the pre-registered rules. This section is my 
 - Weekly-EO markets only; other families have no resolved cases (see above).
 - t_pub = 06:00 ET on the publication date is an assumption; PI times come from the FR API (or the URL timestamp fallback).
 - Trades give exact times and sizes; bid/ask come from hourly candles carried forward, so the buy price at t+2 min can be up to 24 h stale (pre-registered limit). Thin markets: absolute numbers are small.
-- Kalshi fees: standard schedule confirmed by the user (2026-11-14); results are also shown fee-free.
+- Kalshi fees: standard schedule confirmed by the author (2026-11-14); results are also shown fee-free.
 - The deciding-document logic assumes the venue resolves strictly by FR signing date, which the validation row above tests market by market.
 

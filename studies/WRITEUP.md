@@ -10,7 +10,7 @@ Numbers below come from `docs/edge-study.md`, which `scripts/edge_study.py` rege
 |---|---|---|
 | E1: weekly executive-order markets (Kalshi `KXEOWEEK`) | Does the price move at Federal Register public inspection or publication? | **NO SPEED EDGE.** In 22 of 24 usable weeks (92%, Wilson 95% [74%, 98%]) the price was already at 0.90 or above a median of about 2.9 days before the posting. |
 | Strategy (MSTR) 8-K, Polymarket "sells any Bitcoin by May 31, 2026?" | Is the filing a tradable signal? | **No.** The price rose about 5 minutes before the 8-K was accepted. A naive buy 2 minutes after lost about $51 per 100 contracts, because the market resolved No on the deadline wording. |
-| Anthropic S-1, S-1/A and FWP filings | Do the leading filings move the IPO markets? | **No.** Median price change after each filing is 0.000 across 11–14 markets. Descriptive, one correlated cluster. |
+| Anthropic S-1, S-1/A and FWP filings | Do the leading filings move the IPO markets? | **No.** Median price change after each filing was within ±0.007 across 11–14 markets. Descriptive, one correlated cluster. |
 | E2: Anthropic EFFECT notice and 424B pricing prospectus | Do the settling filings move the markets? | **Pending.** Pre-registered, events not yet observed (see E2 below). |
 
 ## 1. Method
@@ -67,7 +67,7 @@ The price started rising before the filing was public on EDGAR, so the filing wa
 
 ## 4. Anthropic S-1 filings
 
-Anthropic, PBC filed its S-1 publicly on 2026-10-26, amended it on Nov 2 and Nov 10, and filed FWPs on Nov 11–12. Across 11–14 markets (12 Kalshi, 8 Polymarket) the median change in YES price after each filing was 0.000 at every horizon from 1 minute to 24 hours, and the mean absolute change was about 0.01–0.03. These filings are leading documents, so this is descriptive.
+Anthropic, PBC filed its S-1 publicly on 2026-10-26, amended it on Nov 2 and Nov 10, and filed FWPs on Nov 11–12. The cluster has 20 markets (12 Kalshi, 8 Polymarket); 11–14 had a price at each filing. The median change in YES price after each filing stayed within ±0.007 at every horizon from 1 minute to 24 hours, and the mean absolute change was about 0.01–0.03. These filings are leading documents, so this is descriptive.
 
 ## 5. E2: live test on the settling filings (pending)
 
@@ -77,11 +77,11 @@ The settling documents are the SEC effectiveness notice (`EFFECT`) and the final
 |---|---|
 | Pre-registration commit | `efb69aa`, 2026-11-13 23:23 −05:00 (04:23 UTC) |
 | Pre-registration text | `studies/e2/preregistration.md` |
-| Amendment 1 (pre-event) | commit `e0b03c9`, dated 2026-11-14 04:52 UTC; EDGAR had no EFFECT or 424B for Anthropic at 04:45 UTC |
+| Amendment 1 (pre-event) | commit `e0b03c9` (2026-11-13 23:46 −05:00, 04:46 UTC); EDGAR had no EFFECT or 424B for Anthropic at 04:45 UTC |
 | Runner | `scripts/e2_run.py` (waits 24 hours after an event before writing results) |
 | Results | `studies/e2/results.md` and `results.json` |
 
-The commit hashes and dates refer to the original private repository's history. To check that the pre-registration came before the event, compare those commit dates with the EDGAR acceptance times in the results.
+Times written inside the documents (for example "about 04:30 UTC" or "dated 04:52 UTC") are approximate; the commit timestamps are authoritative. The commit hashes and dates refer to the original private repository's history. To check that the pre-registration came before the event, compare those commit dates with the EDGAR acceptance times in the results.
 
 **Result: _pending_.**
 
@@ -110,5 +110,6 @@ The E2 verdict (DEAD, MIXED, ALIVE provisional, INCONCLUSIVE, or INSUFFICIENT DA
 ```bash
 uv sync
 uv run python scripts/edge_study.py     # regenerates docs/edge-study.md from studies/e1/inputs/, no network
+uv run python scripts/run_ingest_once.py   # fill the local DB first
 uv run python scripts/e2_run.py         # E2, needs .env and network
 ```

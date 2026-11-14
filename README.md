@@ -3,7 +3,7 @@
 # Prooflag
 
 **Do prediction-market prices lag the public documents that settle them?**
-A research tool that compares market resolution rules against SEC EDGAR and Federal Register filings, with provenance on every result and deterministic replay.
+A research tool that collects prediction-market resolution rules and the SEC EDGAR and Federal Register filings that settle them, so the two can be compared, with provenance on every result and deterministic replay.
 
 [![ci](https://github.com/xiuruichen/prooflag/actions/workflows/ci.yml/badge.svg)](https://github.com/xiuruichen/prooflag/actions/workflows/ci.yml)
 ![python](https://img.shields.io/badge/python-3.11%2B-3776ab)
@@ -14,7 +14,7 @@ A research tool that compares market resolution rules against SEC EDGAR and Fede
 
 </div>
 
-> **Status: research archive.** Not maintained as a trading tool. There is no order-placement code in this repository and CI fails if any appears. Nothing here is financial advice.
+> **Status: research archive.** Not maintained as a trading tool. There is no order-placement code in this repository, and CI greps `src/` for order endpoints. Nothing here is financial advice.
 
 ## What we found
 
@@ -22,7 +22,7 @@ A research tool that compares market resolution rules against SEC EDGAR and Fede
 |---|---|---|
 | **E1: Federal Register executive orders** (weekly Kalshi markets, 24 independent weeks) | **NO SPEED EDGE.** Prices move at signing, about 3 days before public inspection. In 22 of 24 weeks the price was already at 0.90 or above. | [`docs/edge-study.md`](docs/edge-study.md) |
 | **Strategy 8-K** (Polymarket, "sells any Bitcoin by May 31, 2026?") | The price moved **before** the filing was accepted. Buying after it lost money, and the deadline wording (does it apply to the sale or to its publication?) decided the resolution. | [`studies/WRITEUP.md`](studies/WRITEUP.md) §3 |
-| **Anthropic S-1, S-1/A, FWP** | No market move on any of the leading filings (median change 0.000). | [`studies/WRITEUP.md`](studies/WRITEUP.md) §4 |
+| **Anthropic S-1, S-1/A, FWP** | No market move on any of the leading filings (price change within ±0.007 at every horizon). | [`studies/WRITEUP.md`](studies/WRITEUP.md) §4 |
 | **E2: Anthropic EFFECT and 424B** | Pre-registered before the events. **Verdict pending.** | [`studies/e2/`](studies/e2/) |
 
 Full write-up: [`studies/WRITEUP.md`](studies/WRITEUP.md). The honest conclusion so far is that being first to a public document is not an edge on these paths. The more useful product is checking what a rule actually says.
@@ -31,10 +31,10 @@ Full write-up: [`studies/WRITEUP.md`](studies/WRITEUP.md). The honest conclusion
 
 - **Ingests** rules, prices and trades from Kalshi and Polymarket into an append-only SQLite store, keeping every version of a rule.
 - **Watches** SEC EDGAR for new filings and records EDGAR's acceptance time next to the time Prooflag first saw it, so detection lag is measured and not assumed.
-- **Compiles rules** into a structured spec. Two local models (Qwen3-8B and Llama-3.1-8B) vote on whether a deadline applies to an event or to its publication. If they disagree, or any quoted span is not verbatim in the rule, or the timezone is unclear, the answer is `ambiguous`. The Strategy rule compiles to `ambiguous`.
+- **Compiles rules** into a structured spec. Two local models (Qwen3-8B and Llama-3.1-8B) vote on whether a deadline applies to an event or to its publication. If they disagree, or any quoted span is not verbatim in the rule, or the timezone is unclear, the answer is `ambiguous`. The Strategy rule compiled to `ambiguous` in a live run with both models (a unit test checks the logic with fake models).
 - **Replays** studies from the committed inputs with no network, and regenerates the report with the verdict computed by code from rules fixed in advance.
 
-**Not built:** the evaluator (checking a filing against a compiled spec), the signal layer and the web case file. They appear dashed in the diagram above and are out of scope.
+**Not built:** the evaluator (checking a filing against a compiled spec), the signal layer and the web case file. They appear dashed in the diagram above and are planned, not built.
 
 ## Quickstart
 
@@ -47,13 +47,14 @@ cp .env.example .env            # then edit it: put a real contact address in PR
 uv run pytest                   # no network or model needed
 ```
 
-The SEC requires a declared contact in the `User-Agent`. The address is read from `.env`, sent only to SEC hosts, and redacted from logs and stored provenance. Startup fails with a clear message if it is missing.
+The SEC requires a declared contact in the `User-Agent`. The address is read from `.env`, sent only in SEC-bound User-Agents, and redacted from logs and stored provenance. The watcher, E2 runner and fetch script stop with a clear message if it is missing.
 
 ```bash
 uv run python scripts/run_sec_watcher.py --once   # one poll, prints detection lag, exits
 uv run python scripts/run_sec_watcher.py          # keep polling; Ctrl+C to stop
 uv run python scripts/edge_study.py               # replay E1 offline and regenerate docs/edge-study.md
-uv run python scripts/e2_run.py                   # E2 runner (writes studies/e2/results.md once events exist)
+uv run python scripts/run_ingest_once.py          # first: fill the local DB (the E2 runner reads it)
+uv run python scripts/e2_run.py                   # E2 runner (writes studies/e2/results.md; PENDING until the events exist)
 ```
 
 How to check the watcher is alive: [`docs/sec-watcher.md`](docs/sec-watcher.md). Ollama with `qwen3:8b` and `llama3.1:8b` is needed **only** for the rule compiler (`scripts/compile_live.py`). Everything else runs without it.

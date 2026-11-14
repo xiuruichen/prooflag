@@ -20,7 +20,7 @@ No Anthropic EFFECT or 424B event had been observed at the last check. `data/sec
 ## Decisions
 See DECISIONS.md (#1 watcher, #2 infinite-lag reading, #3 24 h settle wait, #4 Polymarket trade source).
 
-## NEEDS RAY
+## NEEDS REVIEW
 None.
 
 ## Recommended next 3 steps

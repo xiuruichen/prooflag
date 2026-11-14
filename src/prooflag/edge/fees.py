@@ -1,6 +1,6 @@
 """Venue fee formulas for the edge study.
 
-Kalshi (standard schedule confirmed by the user, 2026-11-14): taker fee = round_up_to_cent(0.07 x
+Kalshi (standard schedule confirmed by the author, 2026-11-14): taker fee = round_up_to_cent(0.07 x
 multiplier x C x p x (1-p)); maker fee on maker-fee markets = round_up_to_cent(0.0175 x multiplier x
 C x p x (1-p)); rounding is up to the cent PER ORDER. Each series has a fee type from the API:
 'quadratic' (takers only), 'quadratic_with_maker_fees' (takers and makers), 'fee_free'; 'flat' and

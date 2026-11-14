@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -59,7 +60,14 @@ def candidate_markets(settings: Settings) -> list[dict[str, Any]]:
 
 def main() -> None:
     settings = Settings()
-    settings.require_real_contact()
+    try:
+        settings.require_real_contact()
+    except ValueError as e:
+        raise SystemExit(f"error: {e}. Copy .env.example to .env and set it.") from None
+    if not settings.db_path.exists():
+        raise SystemExit(
+            f"error: {settings.db_path} not found. Run scripts/run_ingest_once.py first."
+        )
     now = SystemClock().now()
     filings = sec_filings(settings)
     t_a, b = find_events(filings)
@@ -137,6 +145,8 @@ def main() -> None:
             markets.append(E2Market(m["market_id"], m["venue"], direction, tr, src, fee, close))
         events[name] = analyze_event(name, t_doc, markets)
     ov = overall(events)
+    if t_a is None and b is None:  # nothing to analyse yet: not a verdict
+        ov = replace(ov, verdict="PENDING (no event observed yet)")
     out = ROOT / "studies" / "e2"
     out.mkdir(parents=True, exist_ok=True)
     (out / "results.md").write_text(render_markdown(events, ov, meta), encoding="utf-8")

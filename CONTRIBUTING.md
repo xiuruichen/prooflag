@@ -17,6 +17,6 @@ uv run pytest
 ```
 
 - Add a failing test first for any bug fix.
-- Never commit `.env`, anything under `data/`, or a real contact address. A test fails if the contact address appears in a tracked file.
+- Never commit `.env`, anything under `data/`, or a real contact address. A test checks this locally when a `.env` exists (it is skipped in CI).
 - Do not edit `studies/e2/preregistration.md` except by appending a dated amendment before the event it covers.
 - Respect SEC fair access: declared User-Agent and at most 2 requests per second.

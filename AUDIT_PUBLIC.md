@@ -1,12 +1,12 @@
 # Public-safety audit
 
-Scope: all 22 commits on every branch (`git log -p --all`, no stashes exist), the current tree (197 tracked files, including the decompressed `studies/e1/inputs/*.json.gz`), and `.gitignore` coverage. Run before the cleanup commits; the commit that adds this file also fixes the working tree.
+Scope: all commits on every branch (22 at audit time, 25 now) (`git log -p --all`, no stashes exist), the current tree (about 200 tracked files, including the decompressed `studies/e1/inputs/*.json.gz`), and `.gitignore` coverage. Run before the cleanup commits; the commit that adds this file also fixes the working tree.
 
 ## Result: ONE leak in history
 
 | # | Severity | Where | What | Status |
 |---|---|---|---|---|
-| 1 | **HIGH** | Author and committer metadata of all 22 commits (e.g. `61e0bee`, `e0b03c9`, first commit) | A personal Gmail address in `Author:` / `Committer:` | **Cannot be fixed without rewriting history.** Publish via a fresh repository (see below) |
+| 1 | **HIGH** | Author and committer metadata of every commit, including those already pushed to the private `origin` (e.g. `61e0bee`, `e0b03c9`, first commit) | A personal Gmail address in `Author:` / `Committer:` | **Cannot be fixed without rewriting history.** Publish via a fresh repository (see below) |
 | 2 | LOW | `PLAN.md` line 18 in history (`git log -p`, every commit that touched it) | Windows account name inside a path (`C:\Users\<name>`) | Removed from the working tree. Remains in history |
 | 3 | INFO | `tests/` and history | Only `example.org` / `example.com` placeholder addresses in tests | No action |
 | 4 | INFO | `studies/e1/inputs/edgar_ipo_check.json.gz`, `tests/fixtures/sec/*.xml` | `webmaster@sec.gov` (SEC's public address in a feed) | No action |

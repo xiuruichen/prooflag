@@ -302,6 +302,7 @@ def main() -> None:
     args = ap.parse_args()
     configure_logging(redactor=default_redactor())
     settings = Settings()
+    settings.require_real_contact()  # SEC calls below need a real contact
     if args.only_ipo:
         fetch_ipo(settings)
         return

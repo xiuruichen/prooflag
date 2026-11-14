@@ -1,6 +1,6 @@
 # Strategy / MicroStrategy "sells any Bitcoin by May 31, 2026?" fixture (REAL, archived 2026-11-13)
 
-Verified from primary sources (not only the user description):
+Verified from primary sources (not only a secondhand description):
 
 - Polymarket event slug `microstrategy-sell-any-bitcoin-in-2025` ("MicroStrategy sells any Bitcoin by ___ ?");
   market conditionId begins `0x3733a1b647` (see `polymarket_market_may31.json`). Question: "MicroStrategy sells
@@ -17,7 +17,7 @@ Verified from primary sources (not only the user description):
   (`8k_20260601_mstr-20260530.htm`).
 - Price (YES token, CLOB `prices-history`): about 0.12 until 2026-06-01 11:30Z, 0.35 at 12:00Z and 0.81 at
   12:30Z right after the filing was accepted, down to about 0.41 by 17:00Z, then 0.0005 by 17:30Z (see
-  `yes_price_history_*.json`). The user's report of a UMA dispute is consistent with the `disputed` statuses;
+  `yes_price_history_*.json`). The reported UMA dispute is consistent with the `disputed` statuses;
   the lawsuit was not independently verified here.
 - Other Strategy filings from 2026-05-22 to 2026-06-08 are in `edgar_submissions_window.json`.
 

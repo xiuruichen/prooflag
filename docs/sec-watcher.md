@@ -32,6 +32,7 @@ Code: `src/prooflag/watchers/`, `src/prooflag/linker/`, `src/prooflag/sec_client
 6. **Cadence.** Fast (default 30 s) in the EDGAR window (06:00-22:00 ET, weekdays), slow (15 min) otherwise. After a failed
    poll a source backs off 2, 4, 8 ... minutes (capped at its normal interval) independently of other sources; `run_due()`
    never raises. Health is in `poll_log` (`sec:submissions:<cik>`, `sec:atom:<form>`).
+   **Is it alive?** The log shows `"sec watcher started"` once at startup and a WARNING `"NEW FILING"` (with `accepted_utc`, `detected_utc`, `lag_s`) per new filing; quiet is normal. The newest `poll_log` row per source should be recent with `ok = 1`. A 403 means a bad contact email.
 7. **Watch list.** `watch_ciks` is append-only (reason + reviewer, revocable), seeded from `config/watch_ciks.json`
    (Anthropic, PBC for E2; Strategy Inc for the fixture issuer).
 
